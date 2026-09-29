@@ -1,0 +1,16 @@
+﻿# Python 3.11. CPU-only torch (no NVIDIA GPU on the dev machine):
+#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0
+torchvision==0.29.0
+ultralytics==8.4.164
+pillow==12.3.0
+pi-heif==1.4.0            # ultralytics pip-installs this at first predict if missing; also enables HEIC photos
+numpy==2.4.6
+pandas==3.0.6
+scikit-learn==1.9.1
+sentence-transformers==6.1.0
+streamlit==1.64.0
+fastapi==0.141.1
+uvicorn==0.54.0
+python-multipart==0.0.32
+kaggle==2.2.4             # optional: GPU training on Kaggle (ml/classifier/kaggle_runner.py)
