@@ -1,0 +1,47 @@
+{
+  "biological": [
+    "biological"
+  ],
+  "construction": [
+    "brick",
+    "concrete",
+    "gypsum_board",
+    "pipes",
+    "stone",
+    "tile",
+    "wood"
+  ],
+  "e_waste": [
+    "battery",
+    "keyboard",
+    "media_player",
+    "microwave",
+    "mobile",
+    "mouse",
+    "pcb",
+    "printer",
+    "television",
+    "washing_machine"
+  ],
+  "glass": [
+    "glass"
+  ],
+  "metal": [
+    "metal"
+  ],
+  "paper": [
+    "cardboard",
+    "paper"
+  ],
+  "plastic": [
+    "foam",
+    "plastic"
+  ],
+  "textile": [
+    "clothes",
+    "shoes"
+  ],
+  "trash": [
+    "trash"
+  ]
+}
