@@ -1,0 +1,147 @@
+/* MaterialMatch - small, scoped overrides. Colours/fonts/radius live in .streamlit/config.toml.
+   Cards are st.container(key="card_*"), so selectors use Streamlit's public st-key-* classes. */
+
+:root {
+  --mm-accent: #10B981;
+  --mm-accent-rgb: 16, 185, 129;
+  --mm-surface: rgba(127, 127, 127, 0.045);
+  --mm-line: rgba(127, 127, 127, 0.22);
+}
+
+/* Layout: centred max-width, tighter top padding */
+[data-testid="stMainBlockContainer"] {
+  max-width: 1200px;
+  padding: 4.25rem 1.5rem 2.5rem;
+}
+@media (max-width: 640px) {
+  [data-testid="stMainBlockContainer"] { padding: 4rem 0.75rem 2rem; }
+}
+
+/* Top navigation as a segmented pill control */
+[data-testid="stTopNavLink"] {
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+[data-testid="stTopNavLink"]:hover { background: rgba(127, 127, 127, 0.12); }
+[data-testid="stTopNavLink"][aria-current="page"] {
+  background: rgba(var(--mm-accent-rgb), 0.14);
+  box-shadow: inset 0 0 0 1px rgba(var(--mm-accent-rgb), 0.38);
+}
+
+/* Cards */
+[class*="st-key-card_"] {
+  background: var(--mm-surface);
+  border-color: var(--mm-line) !important;
+  backdrop-filter: blur(6px);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+[class*="st-key-card_rec"]:hover,
+[class*="st-key-card_lst"]:hover { border-color: rgba(var(--mm-accent-rgb), 0.45) !important; }
+
+/* KPI rows: equal-height cards */
+[class*="st-key-kpis_"] { align-items: stretch; }
+[class*="st-key-kpis_"] > [data-testid="stLayoutWrapper"] {
+  align-self: stretch;
+  height: auto !important;
+  min-width: 165px;
+}
+[class*="st-key-kpis_"] [class*="st-key-card_"] { height: 100%; }
+/* the cost-by-quality card lists three rows, so it gets more room than the single-number cards */
+[class*="st-key-kpis_"] > [data-testid="stLayoutWrapper"]:has(.st-key-card_cost) { flex-grow: 1.6; min-width: 300px; }
+
+/* Upload + details cards share a row height */
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-card_upload) { align-items: stretch; }
+[data-testid="stColumn"]:has(.st-key-card_upload) > [data-testid="stVerticalBlock"],
+[data-testid="stColumn"]:has(.st-key-card_upload) [data-testid="stLayoutWrapper"]:has(> .st-key-card_upload) {
+  height: 100% !important;
+}
+.st-key-card_upload { height: 100%; }
+
+/* Highlighted best match */
+[class*="st-key-card_top"] {
+  background: linear-gradient(180deg, rgba(var(--mm-accent-rgb), 0.13), rgba(var(--mm-accent-rgb), 0.03));
+  border-color: rgba(var(--mm-accent-rgb), 0.55) !important;
+}
+
+/* CO2e headline number */
+.st-key-card_co2 [data-testid="stMetricValue"] { color: #12A37F; }
+[data-testid="stMetricValue"] { font-weight: 700; letter-spacing: -0.02em; }
+
+/* Compact upload drop zone */
+.st-key-card_upload [data-testid="stFileUploaderDropzone"] {
+  padding: 0.85rem 1rem;
+  border: 1px dashed rgba(var(--mm-accent-rgb), 0.5);
+  background: rgba(var(--mm-accent-rgb), 0.05);
+  transition: background-color 0.15s ease;
+}
+.st-key-card_upload [data-testid="stFileUploaderDropzone"]:hover {
+  background: rgba(var(--mm-accent-rgb), 0.1);
+}
+
+/* Buttons: fixed deep green so white label text keeps >= 4.5:1 contrast in both themes
+   (dark theme's primaryColor is brighter for pills, focus rings and progress bars). */
+[data-testid^="stBaseButton-primary"],
+[data-testid^="stBaseLinkButton-primary"] {
+  background-color: #0B7F62 !important;
+  border-color: #0B7F62 !important;
+  color: #FFFFFF !important;
+}
+[data-testid="stBaseButton-primary"] {
+  font-weight: 600;
+  box-shadow: 0 6px 18px -6px rgba(var(--mm-accent-rgb), 0.55);
+  transition: filter 0.12s ease, transform 0.12s ease;
+}
+[data-testid="stBaseButton-primary"]:hover { filter: brightness(1.12); }
+[data-testid="stBaseButton-primary"]:active { transform: translateY(1px); }
+button:focus-visible,
+a:focus-visible,
+[data-testid="stTopNavLink"]:focus-visible {
+  outline: 2px solid var(--mm-accent) !important;
+  outline-offset: 2px;
+}
+
+/* Tighter label spacing in form grids */
+[data-testid="stWidgetLabel"] { margin-bottom: 0.1rem; }
+
+/* Hover / focus tooltips (tip() in common.py). Keyboard-focusable, so they also work on tap. */
+.mm-tip { position: relative; display: inline-flex; align-items: center; gap: 0.25rem; cursor: help; outline: none; }
+.mm-tip:focus-visible { outline: 2px solid var(--mm-accent); outline-offset: 2px; border-radius: 4px; }
+.mm-tip::after {
+  content: attr(data-tip);
+  position: absolute; left: 0; bottom: calc(100% + 8px); transform: translateY(4px);
+  width: max-content; max-width: 260px; white-space: normal; text-align: left;
+  padding: 0.45rem 0.6rem; border-radius: 8px;
+  background: #1C262B; color: #E3EBED; border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  font-size: 0.75rem; font-weight: 400; line-height: 1.35; letter-spacing: normal;
+  opacity: 0; pointer-events: none; z-index: 1000;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.mm-tip-below::after { bottom: auto; top: calc(100% + 8px); left: auto; right: 0; transform: translate(0, -4px); }
+.mm-tip:hover::after, .mm-tip:focus::after { opacity: 1; transform: translateY(0); }
+.mm-tip-below:hover::after, .mm-tip-below:focus::after { transform: translate(0, 0); }
+.mm-ico {
+  font-family: "Material Symbols Rounded"; font-size: 1.1em; line-height: 1;
+  font-weight: normal; font-style: normal; -webkit-font-smoothing: antialiased; opacity: 0.8;
+}
+.mm-dot { opacity: 0.5; margin: 0 0.45rem; }
+
+/* Recycler monogram (sample profiles: no real logos) */
+.mm-logo {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.4rem; height: 2.4rem; border-radius: 10px;
+  background: color-mix(in srgb, var(--mm-logo) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mm-logo) 45%, transparent);
+  color: var(--mm-logo); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.02em;
+}
+
+/* Match score block */
+.mm-score { display: block; font-size: 1.35rem; font-weight: 700; line-height: 1.1; text-align: right; }
+.mm-score-label { display: block; font-size: 0.75rem; opacity: 0.65; text-align: right; }
+.mm-score, .mm-score-label { width: 100%; }
+.mm-tip:has(.mm-score) { flex-direction: column; align-items: flex-end; gap: 0; }
+
+/* Upload thumbnails + per-photo prediction rows */
+.st-key-card_upload [data-testid="stImage"] img { border-radius: 8px; object-fit: cover; }
+.mm-dlg-name { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
