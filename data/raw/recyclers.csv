@@ -1,0 +1,11 @@
+recycler_id,name,waste_types,lat,lon,capacity_kg_per_month
+1,Bengaluru Textile Recyclers,textile,12.96,77.61,50000
+2,Jigani Plastic Solutions,plastic,12.8967,77.5883,100000
+3,Bengaluru C&D Recyclers,construction,12.95,77.6,200000
+4,E-Waste Bengaluru,e_waste,12.9716,77.5946,10000
+5,Multi-Waste Solutions,"textile,plastic,construction",13.01,77.55,150000
+6,Peenya Paper Recovery,paper,13.0285,77.5197,80000
+7,Bommasandra Glass Cullet Recyclers,glass,12.8157,77.696,40000
+8,Mysore Road Metal Recyclers,metal,12.953,77.535,120000
+9,Yelahanka Organics & Compost,biological,13.1007,77.5963,60000
+10,Whitefield Dry Waste Sorting Centre,"trash,paper,glass,metal",12.98,77.73,90000

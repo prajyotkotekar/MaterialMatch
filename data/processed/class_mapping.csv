@@ -1,0 +1,31 @@
+dataset,source_label,canonical_waste_type,canonical_sub_type,status,notes
+codd,concrete,construction,concrete,mapped,"CODD object label; 2,155 boxes"
+codd,brick,construction,brick,mapped,"CODD object label; 2,093 boxes"
+codd,tile,construction,tile,mapped,"CODD object label (ceramic/stone tile fragments); 2,065 boxes"
+codd,gypsum_board,construction,gypsum_board,mapped,"CODD object label (plasterboard); 1,777 boxes"
+codd,wood,construction,wood,mapped,"CODD object label (timber/board offcuts); 2,055 boxes"
+codd,stone,construction,stone,mapped,"CODD object label (natural stone/pebbles); 1,259 boxes"
+codd,pipes,construction,pipes,judgement,"Visually mostly plastic conduit / PVC pipe, but it is a C&D site component and the label gives no material; kept under construction (previous project decision). 1,231 boxes"
+codd,plastic,plastic,plastic,mapped,"Rigid construction plastics (profiles, sheets, packaging on C&D sites); polymer not labelled. 1,247 boxes"
+codd,foam,plastic,foam,judgement,"Expanded polystyrene / insulation foam; counted as plastic (project convention). 1,341 boxes"
+codd,general_w,,,unmapped,"'General waste' - visually a mix of PET bottles, film and other items; the label does not identify a material, so it is excluded from training (used only as an out-of-distribution probe). 1,296 boxes"
+ewaste_small,Battery,e_waste,battery,mapped,"Official split 240/30/30. ~250 images are near-duplicates of garbage_v2/battery (handled by duplicate grouping)"
+ewaste_small,Keyboard,e_waste,keyboard,mapped,Official split 240/30/30
+ewaste_small,Microwave,e_waste,microwave,mapped,Official split 240/30/30
+ewaste_small,Mobile,e_waste,mobile,mapped,Official split 240/30/30 (phones and tablets)
+ewaste_small,Mouse,e_waste,mouse,mapped,Official split 240/30/30
+ewaste_small,PCB,e_waste,pcb,mapped,Official split 240/30/30 (printed circuit boards)
+ewaste_small,Player,e_waste,media_player,mapped,"Official split 240/30/30 (boomboxes, CD/record players, radios); renamed from 'Player' for clarity"
+ewaste_small,Printer,e_waste,printer,mapped,Official split 240/30/30
+ewaste_small,Television,e_waste,television,mapped,Official split 240/30/30
+ewaste_small,Washing Machine,e_waste,washing_machine,mapped,Official split 240/30/30
+garbage_v2,battery,e_waste,battery,mapped,"Household, laptop, phone and lead-acid batteries; merged with ewaste_small/Battery (same content)"
+garbage_v2,biological,biological,biological,mapped,"Food / organic waste (bread, fruit, vegetables); previously ignored"
+garbage_v2,cardboard,paper,cardboard,mapped,"Previously ignored. Quality issue: many images are beverage cartons (Tetra Pak style paperboard/PE/aluminium composites), not only corrugated board"
+garbage_v2,clothes,textile,clothes,mapped,Garments on plain backgrounds
+garbage_v2,glass,glass,glass,mapped,"Bottles, jars, drinkware; previously ignored"
+garbage_v2,metal,metal,metal,mapped,"Cans, tins, lids, tools; previously ignored. Some label noise seen (e.g. a vinyl record)"
+garbage_v2,paper,paper,paper,mapped,"Newspaper, sheets, magazines, paper piles; previously ignored"
+garbage_v2,plastic,plastic,plastic,mapped,"Bottles, containers, household packaging; polymer (PET/HDPE/PP) not labelled"
+garbage_v2,shoes,textile,shoes,judgement,"Footwear is mixed material (leather/rubber/fabric); kept under textile (previous project decision)"
+garbage_v2,trash,trash,trash,mapped,"Mixed residual waste (face masks, toothbrushes, litter on the ground); heterogeneous, smallest folder (453); previously ignored"

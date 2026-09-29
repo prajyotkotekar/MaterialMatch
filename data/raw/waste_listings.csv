@@ -1,0 +1,206 @@
+waste_id,waste_type,sub_type,quantity_kg,quality,location_name,location_lat,location_lon,seller_name,seller_contact,price_per_kg,description
+1,textile,cotton_scrap,2506,fair,Whitefield,12.9881,77.7058,Factory_1,+91 80 0100 0001,23,cotton_scrap waste from Bengaluru textile industry
+2,textile,cotton_scrap,3348,poor,Kiadb Industrial Area,13.0458,77.5946,Factory_2,+91 80 0100 0002,18,cotton_scrap waste from Bengaluru textile industry
+3,textile,cotton_scrap,2708,good,Whitefield,12.9474,77.7389,Factory_3,+91 80 0100 0003,30,cotton_scrap waste from Bengaluru textile industry
+4,textile,cotton_scrap,3853,good,Jigani Industrial Area,12.9134,77.5699,Factory_4,+91 80 0100 0004,30,cotton_scrap waste from Bengaluru textile industry
+5,textile,cotton_scrap,1555,poor,Peenya Industrial Area,13.0226,77.5477,Factory_5,+91 80 0100 0005,18,cotton_scrap waste from Bengaluru textile industry
+6,textile,cotton_scrap,4661,fair,Kiadb Industrial Area,12.9672,77.5492,Factory_6,+91 80 0100 0006,25,cotton_scrap waste from Bengaluru textile industry
+7,textile,cotton_scrap,1170,fair,Peenya Industrial Area,13.0611,77.5148,Factory_7,+91 80 0100 0007,25,cotton_scrap waste from Bengaluru textile industry
+8,textile,cotton_scrap,1035,good,Jigani Industrial Area,12.8786,77.6154,Factory_8,+91 80 0100 0008,29,cotton_scrap waste from Bengaluru textile industry
+9,textile,cotton_scrap,3281,fair,Kiadb Industrial Area,13.0511,77.5397,Factory_9,+91 80 0100 0009,24,cotton_scrap waste from Bengaluru textile industry
+10,textile,cotton_scrap,2293,good,Peenya Industrial Area,13.0599,77.5314,Factory_10,+91 80 0100 0010,29,cotton_scrap waste from Bengaluru textile industry
+11,textile,polyester_waste,430,poor,Tumkur Road Industrial,13.1255,77.4614,Factory_11,+91 80 0100 0011,18,polyester_waste waste from Bengaluru textile industry
+12,textile,polyester_waste,4005,fair,Peenya Industrial Area,13.0597,77.5686,Factory_12,+91 80 0100 0012,24,polyester_waste waste from Bengaluru textile industry
+13,textile,polyester_waste,2938,poor,Whitefield,13.0148,77.714,Factory_13,+91 80 0100 0013,17,polyester_waste waste from Bengaluru textile industry
+14,textile,polyester_waste,1841,fair,Tumkur Road Industrial,13.0928,77.528,Factory_14,+91 80 0100 0014,23,polyester_waste waste from Bengaluru textile industry
+15,textile,polyester_waste,2228,good,Whitefield,12.9713,77.7037,Factory_15,+91 80 0100 0015,28,polyester_waste waste from Bengaluru textile industry
+16,textile,polyester_waste,2803,good,Whitefield,12.9402,77.7759,Factory_16,+91 80 0100 0016,29,polyester_waste waste from Bengaluru textile industry
+17,textile,polyester_waste,369,poor,Kiadb Industrial Area,13.035,77.521,Factory_17,+91 80 0100 0017,17,polyester_waste waste from Bengaluru textile industry
+18,textile,polyester_waste,3302,poor,Kiadb Industrial Area,12.9699,77.5902,Factory_18,+91 80 0100 0018,16,polyester_waste waste from Bengaluru textile industry
+19,textile,polyester_waste,1728,good,Jigani Industrial Area,12.9181,77.5682,Factory_19,+91 80 0100 0019,27,polyester_waste waste from Bengaluru textile industry
+20,textile,polyester_waste,4163,fair,Kiadb Industrial Area,13.0336,77.5013,Factory_20,+91 80 0100 0020,22,polyester_waste waste from Bengaluru textile industry
+21,textile,fabric_offcuts,1428,good,Tumkur Road Industrial,13.1619,77.5541,Factory_21,+91 80 0100 0021,25,fabric_offcuts waste from Bengaluru textile industry
+22,textile,fabric_offcuts,252,poor,Tumkur Road Industrial,13.158,77.5084,Factory_22,+91 80 0100 0022,15,fabric_offcuts waste from Bengaluru textile industry
+23,textile,fabric_offcuts,3394,poor,Peenya Industrial Area,13.006,77.5189,Factory_23,+91 80 0100 0023,15,fabric_offcuts waste from Bengaluru textile industry
+24,textile,fabric_offcuts,4665,good,Kiadb Industrial Area,13.0353,77.579,Factory_24,+91 80 0100 0024,24,fabric_offcuts waste from Bengaluru textile industry
+25,textile,fabric_offcuts,4810,good,Kiadb Industrial Area,13.0,77.5724,Factory_25,+91 80 0100 0025,25,fabric_offcuts waste from Bengaluru textile industry
+26,textile,fabric_offcuts,1645,good,Kiadb Industrial Area,13.0089,77.5737,Factory_26,+91 80 0100 0026,25,fabric_offcuts waste from Bengaluru textile industry
+27,textile,fabric_offcuts,2380,poor,Peenya Industrial Area,13.0108,77.5779,Factory_27,+91 80 0100 0027,14,fabric_offcuts waste from Bengaluru textile industry
+28,textile,fabric_offcuts,813,fair,Peenya Industrial Area,13.0319,77.5701,Factory_28,+91 80 0100 0028,20,fabric_offcuts waste from Bengaluru textile industry
+29,textile,fabric_offcuts,1809,fair,Peenya Industrial Area,13.0865,77.5045,Factory_29,+91 80 0100 0029,20,fabric_offcuts waste from Bengaluru textile industry
+30,textile,fabric_offcuts,4725,good,Jigani Industrial Area,12.8799,77.5723,Factory_30,+91 80 0100 0030,24,fabric_offcuts waste from Bengaluru textile industry
+31,textile,textile_fiber,1433,fair,Tumkur Road Industrial,13.1468,77.5274,Factory_31,+91 80 0100 0031,27,textile_fiber waste from Bengaluru textile industry
+32,textile,textile_fiber,3194,poor,Tumkur Road Industrial,13.0721,77.4695,Factory_32,+91 80 0100 0032,22,textile_fiber waste from Bengaluru textile industry
+33,textile,textile_fiber,2832,fair,Jigani Industrial Area,12.8803,77.602,Factory_33,+91 80 0100 0033,29,textile_fiber waste from Bengaluru textile industry
+34,textile,textile_fiber,4119,good,Whitefield,13.0039,77.7244,Factory_34,+91 80 0100 0034,35,textile_fiber waste from Bengaluru textile industry
+35,textile,textile_fiber,228,poor,Peenya Industrial Area,13.0192,77.5621,Factory_35,+91 80 0100 0035,21,textile_fiber waste from Bengaluru textile industry
+36,textile,textile_fiber,2947,good,Peenya Industrial Area,13.0805,77.5089,Factory_36,+91 80 0100 0036,37,textile_fiber waste from Bengaluru textile industry
+37,textile,textile_fiber,2836,poor,Kiadb Industrial Area,12.9856,77.5391,Factory_37,+91 80 0100 0037,21,textile_fiber waste from Bengaluru textile industry
+38,textile,textile_fiber,1874,good,Peenya Industrial Area,13.0182,77.5546,Factory_38,+91 80 0100 0038,35,textile_fiber waste from Bengaluru textile industry
+39,textile,textile_fiber,2420,good,Whitefield,13.007,77.7134,Factory_39,+91 80 0100 0039,37,textile_fiber waste from Bengaluru textile industry
+40,textile,textile_fiber,2813,poor,Kiadb Industrial Area,12.984,77.5199,Factory_40,+91 80 0100 0040,21,textile_fiber waste from Bengaluru textile industry
+41,plastic,HDPE_film,2266,poor,Jigani Industrial Area,12.8899,77.542,Factory_41,+91 80 0100 0041,25,HDPE_film waste from Bengaluru plastic industry
+42,plastic,HDPE_film,3687,good,Kiadb Industrial Area,13.0356,77.5053,Factory_42,+91 80 0100 0042,39,HDPE_film waste from Bengaluru plastic industry
+43,plastic,HDPE_film,1062,fair,Whitefield,12.9489,77.7449,Factory_43,+91 80 0100 0043,31,HDPE_film waste from Bengaluru plastic industry
+44,plastic,HDPE_film,1743,fair,Jigani Industrial Area,12.8717,77.5651,Factory_44,+91 80 0100 0044,33,HDPE_film waste from Bengaluru plastic industry
+45,plastic,HDPE_film,1533,good,Tumkur Road Industrial,13.1078,77.47,Factory_45,+91 80 0100 0045,39,HDPE_film waste from Bengaluru plastic industry
+46,plastic,HDPE_film,4238,fair,Tumkur Road Industrial,13.1136,77.5,Factory_46,+91 80 0100 0046,32,HDPE_film waste from Bengaluru plastic industry
+47,plastic,HDPE_film,4827,fair,Peenya Industrial Area,13.0504,77.5477,Factory_47,+91 80 0100 0047,32,HDPE_film waste from Bengaluru plastic industry
+48,plastic,HDPE_film,1722,good,Jigani Industrial Area,12.9071,77.6199,Factory_48,+91 80 0100 0048,39,HDPE_film waste from Bengaluru plastic industry
+49,plastic,HDPE_film,281,good,Tumkur Road Industrial,13.0851,77.5314,Factory_49,+91 80 0100 0049,41,HDPE_film waste from Bengaluru plastic industry
+50,plastic,HDPE_film,3228,good,Whitefield,13.0007,77.7977,Factory_50,+91 80 0100 0050,40,HDPE_film waste from Bengaluru plastic industry
+51,plastic,LDPE_plastic,4088,poor,Whitefield,13.012,77.7197,Factory_51,+91 80 0100 0051,19,LDPE_plastic waste from Bengaluru plastic industry
+52,plastic,LDPE_plastic,2683,fair,Tumkur Road Industrial,13.1238,77.4812,Factory_52,+91 80 0100 0052,25,LDPE_plastic waste from Bengaluru plastic industry
+53,plastic,LDPE_plastic,107,fair,Jigani Industrial Area,12.8665,77.6077,Factory_53,+91 80 0100 0053,25,LDPE_plastic waste from Bengaluru plastic industry
+54,plastic,LDPE_plastic,2068,fair,Peenya Industrial Area,13.099,77.5181,Factory_54,+91 80 0100 0054,26,LDPE_plastic waste from Bengaluru plastic industry
+55,plastic,LDPE_plastic,2736,good,Peenya Industrial Area,13.0552,77.5141,Factory_55,+91 80 0100 0055,32,LDPE_plastic waste from Bengaluru plastic industry
+56,plastic,LDPE_plastic,1006,fair,Kiadb Industrial Area,13.011,77.5475,Factory_56,+91 80 0100 0056,26,LDPE_plastic waste from Bengaluru plastic industry
+57,plastic,LDPE_plastic,2986,poor,Peenya Industrial Area,13.0197,77.5023,Factory_57,+91 80 0100 0057,19,LDPE_plastic waste from Bengaluru plastic industry
+58,plastic,LDPE_plastic,2878,poor,Whitefield,12.9699,77.7814,Factory_58,+91 80 0100 0058,19,LDPE_plastic waste from Bengaluru plastic industry
+59,plastic,LDPE_plastic,4346,fair,Peenya Industrial Area,13.0256,77.5444,Factory_59,+91 80 0100 0059,24,LDPE_plastic waste from Bengaluru plastic industry
+60,plastic,LDPE_plastic,1485,fair,Peenya Industrial Area,13.0252,77.5375,Factory_60,+91 80 0100 0060,27,LDPE_plastic waste from Bengaluru plastic industry
+61,plastic,PP_waste,492,good,Kiadb Industrial Area,13.0087,77.5975,Factory_61,+91 80 0100 0061,38,PP_waste waste from Bengaluru plastic industry
+62,plastic,PP_waste,199,fair,Kiadb Industrial Area,13.0116,77.5303,Factory_62,+91 80 0100 0062,30,PP_waste waste from Bengaluru plastic industry
+63,plastic,PP_waste,4845,fair,Kiadb Industrial Area,12.9747,77.578,Factory_63,+91 80 0100 0063,30,PP_waste waste from Bengaluru plastic industry
+64,plastic,PP_waste,2496,good,Kiadb Industrial Area,12.9605,77.5746,Factory_64,+91 80 0100 0064,36,PP_waste waste from Bengaluru plastic industry
+65,plastic,PP_waste,4152,fair,Jigani Industrial Area,12.876,77.6132,Factory_65,+91 80 0100 0065,32,PP_waste waste from Bengaluru plastic industry
+66,plastic,PP_waste,1636,poor,Kiadb Industrial Area,13.0523,77.5283,Factory_66,+91 80 0100 0066,24,PP_waste waste from Bengaluru plastic industry
+67,plastic,PP_waste,3273,poor,Kiadb Industrial Area,13.0188,77.5071,Factory_67,+91 80 0100 0067,22,PP_waste waste from Bengaluru plastic industry
+68,plastic,PP_waste,460,good,Kiadb Industrial Area,12.9879,77.5384,Factory_68,+91 80 0100 0068,37,PP_waste waste from Bengaluru plastic industry
+69,plastic,PP_waste,2499,fair,Whitefield,12.9213,77.706,Factory_69,+91 80 0100 0069,31,PP_waste waste from Bengaluru plastic industry
+70,plastic,PP_waste,2169,fair,Jigani Industrial Area,12.8618,77.5539,Factory_70,+91 80 0100 0070,30,PP_waste waste from Bengaluru plastic industry
+71,plastic,PET_bottles,1540,fair,Kiadb Industrial Area,12.9879,77.5365,Factory_71,+91 80 0100 0071,36,PET_bottles waste from Bengaluru plastic industry
+72,plastic,PET_bottles,4576,poor,Peenya Industrial Area,13.0949,77.4954,Factory_72,+91 80 0100 0072,27,PET_bottles waste from Bengaluru plastic industry
+73,plastic,PET_bottles,544,poor,Tumkur Road Industrial,13.1629,77.5217,Factory_73,+91 80 0100 0073,28,PET_bottles waste from Bengaluru plastic industry
+74,plastic,PET_bottles,259,fair,Jigani Industrial Area,12.8798,77.63,Factory_74,+91 80 0100 0074,38,PET_bottles waste from Bengaluru plastic industry
+75,plastic,PET_bottles,4747,poor,Peenya Industrial Area,13.0567,77.5609,Factory_75,+91 80 0100 0075,28,PET_bottles waste from Bengaluru plastic industry
+76,plastic,PET_bottles,492,poor,Jigani Industrial Area,12.8627,77.5982,Factory_76,+91 80 0100 0076,27,PET_bottles waste from Bengaluru plastic industry
+77,plastic,PET_bottles,1607,poor,Peenya Industrial Area,13.0063,77.5874,Factory_77,+91 80 0100 0077,26,PET_bottles waste from Bengaluru plastic industry
+78,plastic,PET_bottles,4915,good,Jigani Industrial Area,12.849,77.5909,Factory_78,+91 80 0100 0078,47,PET_bottles waste from Bengaluru plastic industry
+79,plastic,PET_bottles,1158,poor,Tumkur Road Industrial,13.0889,77.4898,Factory_79,+91 80 0100 0079,25,PET_bottles waste from Bengaluru plastic industry
+80,plastic,PET_bottles,1774,fair,Tumkur Road Industrial,13.0808,77.4732,Factory_80,+91 80 0100 0080,35,PET_bottles waste from Bengaluru plastic industry
+81,construction,concrete_debris,2704,good,Kiadb Industrial Area,12.9917,77.5545,Factory_81,+91 80 0100 0081,5,concrete_debris waste from Bengaluru construction industry
+82,construction,concrete_debris,3444,poor,Peenya Industrial Area,13.0298,77.5264,Factory_82,+91 80 0100 0082,3,concrete_debris waste from Bengaluru construction industry
+83,construction,concrete_debris,3509,poor,Jigani Industrial Area,12.8979,77.5498,Factory_83,+91 80 0100 0083,3,concrete_debris waste from Bengaluru construction industry
+84,construction,concrete_debris,4115,good,Tumkur Road Industrial,13.1235,77.5353,Factory_84,+91 80 0100 0084,5,concrete_debris waste from Bengaluru construction industry
+85,construction,concrete_debris,3759,good,Jigani Industrial Area,12.8769,77.5906,Factory_85,+91 80 0100 0085,5,concrete_debris waste from Bengaluru construction industry
+86,construction,concrete_debris,4528,good,Peenya Industrial Area,13.0136,77.5231,Factory_86,+91 80 0100 0086,5,concrete_debris waste from Bengaluru construction industry
+87,construction,concrete_debris,3758,poor,Peenya Industrial Area,13.0229,77.5097,Factory_87,+91 80 0100 0087,3,concrete_debris waste from Bengaluru construction industry
+88,construction,concrete_debris,3010,fair,Tumkur Road Industrial,13.1367,77.5375,Factory_88,+91 80 0100 0088,4,concrete_debris waste from Bengaluru construction industry
+89,construction,concrete_debris,1847,poor,Whitefield,12.9814,77.7049,Factory_89,+91 80 0100 0089,3,concrete_debris waste from Bengaluru construction industry
+90,construction,concrete_debris,334,fair,Kiadb Industrial Area,13.0352,77.5482,Factory_90,+91 80 0100 0090,4,concrete_debris waste from Bengaluru construction industry
+91,construction,brick_rubble,498,good,Whitefield,12.9556,77.7667,Factory_91,+91 80 0100 0091,5,brick_rubble waste from Bengaluru construction industry
+92,construction,brick_rubble,2885,fair,Peenya Industrial Area,13.018,77.5237,Factory_92,+91 80 0100 0092,4,brick_rubble waste from Bengaluru construction industry
+93,construction,brick_rubble,2424,poor,Whitefield,12.925,77.7763,Factory_93,+91 80 0100 0093,3,brick_rubble waste from Bengaluru construction industry
+94,construction,brick_rubble,4880,fair,Kiadb Industrial Area,12.9982,77.5226,Factory_94,+91 80 0100 0094,4,brick_rubble waste from Bengaluru construction industry
+95,construction,brick_rubble,2916,poor,Peenya Industrial Area,13.0882,77.4915,Factory_95,+91 80 0100 0095,3,brick_rubble waste from Bengaluru construction industry
+96,construction,brick_rubble,4198,good,Whitefield,12.9389,77.7504,Factory_96,+91 80 0100 0096,5,brick_rubble waste from Bengaluru construction industry
+97,construction,brick_rubble,2056,fair,Kiadb Industrial Area,12.9712,77.557,Factory_97,+91 80 0100 0097,4,brick_rubble waste from Bengaluru construction industry
+98,construction,brick_rubble,432,poor,Whitefield,12.9241,77.7334,Factory_98,+91 80 0100 0098,3,brick_rubble waste from Bengaluru construction industry
+99,construction,brick_rubble,3117,poor,Peenya Industrial Area,13.042,77.5295,Factory_99,+91 80 0100 0099,3,brick_rubble waste from Bengaluru construction industry
+100,construction,brick_rubble,1915,good,Tumkur Road Industrial,13.1047,77.4775,Factory_100,+91 80 0100 0100,5,brick_rubble waste from Bengaluru construction industry
+101,construction,wood_waste,1492,fair,Kiadb Industrial Area,13.0319,77.5451,Factory_101,+91 80 0100 0101,7,wood_waste waste from Bengaluru construction industry
+102,construction,wood_waste,981,good,Kiadb Industrial Area,13.0414,77.5188,Factory_102,+91 80 0100 0102,8,wood_waste waste from Bengaluru construction industry
+103,construction,wood_waste,4313,poor,Tumkur Road Industrial,13.0702,77.4964,Factory_103,+91 80 0100 0103,5,wood_waste waste from Bengaluru construction industry
+104,construction,wood_waste,4363,poor,Jigani Industrial Area,12.8603,77.5674,Factory_104,+91 80 0100 0104,5,wood_waste waste from Bengaluru construction industry
+105,construction,wood_waste,2485,fair,Jigani Industrial Area,12.9423,77.5591,Factory_105,+91 80 0100 0105,7,wood_waste waste from Bengaluru construction industry
+106,construction,wood_waste,1466,fair,Tumkur Road Industrial,13.1548,77.4822,Factory_106,+91 80 0100 0106,6,wood_waste waste from Bengaluru construction industry
+107,construction,wood_waste,4260,good,Peenya Industrial Area,13.0097,77.5022,Factory_107,+91 80 0100 0107,8,wood_waste waste from Bengaluru construction industry
+108,construction,wood_waste,373,fair,Peenya Industrial Area,13.0685,77.5464,Factory_108,+91 80 0100 0108,7,wood_waste waste from Bengaluru construction industry
+109,construction,wood_waste,2172,fair,Peenya Industrial Area,13.0875,77.4942,Factory_109,+91 80 0100 0109,6,wood_waste waste from Bengaluru construction industry
+110,construction,wood_waste,2564,poor,Kiadb Industrial Area,12.9637,77.5794,Factory_110,+91 80 0100 0110,5,wood_waste waste from Bengaluru construction industry
+111,construction,steel_scrap,1242,fair,Peenya Industrial Area,13.0327,77.5461,Factory_111,+91 80 0100 0111,26,steel_scrap waste from Bengaluru construction industry
+112,construction,steel_scrap,687,poor,Kiadb Industrial Area,13.0537,77.5215,Factory_112,+91 80 0100 0112,19,steel_scrap waste from Bengaluru construction industry
+113,construction,steel_scrap,4469,fair,Whitefield,12.9551,77.7809,Factory_113,+91 80 0100 0113,26,steel_scrap waste from Bengaluru construction industry
+114,construction,steel_scrap,1544,poor,Tumkur Road Industrial,13.104,77.5268,Factory_114,+91 80 0100 0114,18,steel_scrap waste from Bengaluru construction industry
+115,construction,steel_scrap,2991,poor,Peenya Industrial Area,13.0731,77.5428,Factory_115,+91 80 0100 0115,19,steel_scrap waste from Bengaluru construction industry
+116,construction,steel_scrap,3359,fair,Tumkur Road Industrial,13.1366,77.48,Factory_116,+91 80 0100 0116,24,steel_scrap waste from Bengaluru construction industry
+117,construction,steel_scrap,4722,fair,Tumkur Road Industrial,13.1471,77.48,Factory_117,+91 80 0100 0117,24,steel_scrap waste from Bengaluru construction industry
+118,construction,steel_scrap,537,fair,Peenya Industrial Area,13.0515,77.587,Factory_118,+91 80 0100 0118,26,steel_scrap waste from Bengaluru construction industry
+119,construction,steel_scrap,2067,poor,Kiadb Industrial Area,13.0012,77.5485,Factory_119,+91 80 0100 0119,19,steel_scrap waste from Bengaluru construction industry
+120,construction,steel_scrap,3385,poor,Tumkur Road Industrial,13.148,77.5388,Factory_120,+91 80 0100 0120,19,steel_scrap waste from Bengaluru construction industry
+121,e_waste,circuit_boards,856,fair,Tumkur Road Industrial,13.1418,77.5512,Factory_121,+91 80 0100 0121,65,circuit_boards waste from Bengaluru e_waste industry
+122,e_waste,circuit_boards,4323,good,Peenya Industrial Area,13.1008,77.5543,Factory_122,+91 80 0100 0122,84,circuit_boards waste from Bengaluru e_waste industry
+123,e_waste,circuit_boards,4987,good,Peenya Industrial Area,13.0204,77.5514,Factory_123,+91 80 0100 0123,79,circuit_boards waste from Bengaluru e_waste industry
+124,e_waste,circuit_boards,3622,good,Peenya Industrial Area,13.0234,77.5805,Factory_124,+91 80 0100 0124,78,circuit_boards waste from Bengaluru e_waste industry
+125,e_waste,circuit_boards,1956,fair,Tumkur Road Industrial,13.0998,77.4944,Factory_125,+91 80 0100 0125,63,circuit_boards waste from Bengaluru e_waste industry
+126,e_waste,circuit_boards,3870,poor,Peenya Industrial Area,13.0114,77.5539,Factory_126,+91 80 0100 0126,46,circuit_boards waste from Bengaluru e_waste industry
+127,e_waste,circuit_boards,1446,poor,Peenya Industrial Area,13.0065,77.5573,Factory_127,+91 80 0100 0127,49,circuit_boards waste from Bengaluru e_waste industry
+128,e_waste,circuit_boards,4969,poor,Jigani Industrial Area,12.9284,77.5712,Factory_128,+91 80 0100 0128,50,circuit_boards waste from Bengaluru e_waste industry
+129,e_waste,circuit_boards,327,good,Whitefield,12.9253,77.7491,Factory_129,+91 80 0100 0129,80,circuit_boards waste from Bengaluru e_waste industry
+130,e_waste,circuit_boards,1192,fair,Kiadb Industrial Area,13.033,77.5713,Factory_130,+91 80 0100 0130,64,circuit_boards waste from Bengaluru e_waste industry
+131,e_waste,metal_components,2711,poor,Peenya Industrial Area,13.0903,77.5444,Factory_131,+91 80 0100 0131,25,metal_components waste from Bengaluru e_waste industry
+132,e_waste,metal_components,601,fair,Peenya Industrial Area,13.0907,77.5595,Factory_132,+91 80 0100 0132,33,metal_components waste from Bengaluru e_waste industry
+133,e_waste,metal_components,2473,poor,Peenya Industrial Area,13.0448,77.4932,Factory_133,+91 80 0100 0133,25,metal_components waste from Bengaluru e_waste industry
+134,e_waste,metal_components,4213,poor,Jigani Industrial Area,12.9223,77.6329,Factory_134,+91 80 0100 0134,25,metal_components waste from Bengaluru e_waste industry
+135,e_waste,metal_components,4067,fair,Peenya Industrial Area,13.0412,77.5815,Factory_135,+91 80 0100 0135,31,metal_components waste from Bengaluru e_waste industry
+136,e_waste,metal_components,2966,fair,Tumkur Road Industrial,13.1061,77.4873,Factory_136,+91 80 0100 0136,33,metal_components waste from Bengaluru e_waste industry
+137,e_waste,metal_components,2678,good,Tumkur Road Industrial,13.1485,77.5249,Factory_137,+91 80 0100 0137,41,metal_components waste from Bengaluru e_waste industry
+138,e_waste,metal_components,4677,poor,Tumkur Road Industrial,13.1434,77.4734,Factory_138,+91 80 0100 0138,25,metal_components waste from Bengaluru e_waste industry
+139,e_waste,metal_components,3565,good,Whitefield,12.9215,77.7286,Factory_139,+91 80 0100 0139,39,metal_components waste from Bengaluru e_waste industry
+140,e_waste,metal_components,2927,fair,Tumkur Road Industrial,13.0748,77.4904,Factory_140,+91 80 0100 0140,33,metal_components waste from Bengaluru e_waste industry
+141,e_waste,cable_scrap,3130,good,Whitefield,12.9528,77.7855,Factory_141,+91 80 0100 0141,122,cable_scrap waste from Bengaluru e_waste industry
+142,e_waste,cable_scrap,4581,poor,Tumkur Road Industrial,13.1451,77.4638,Factory_142,+91 80 0100 0142,71,cable_scrap waste from Bengaluru e_waste industry
+143,e_waste,cable_scrap,2046,fair,Peenya Industrial Area,13.0471,77.5775,Factory_143,+91 80 0100 0143,91,cable_scrap waste from Bengaluru e_waste industry
+144,e_waste,cable_scrap,1171,poor,Whitefield,13.0174,77.7131,Factory_144,+91 80 0100 0144,71,cable_scrap waste from Bengaluru e_waste industry
+145,e_waste,cable_scrap,4796,good,Kiadb Industrial Area,13.0331,77.589,Factory_145,+91 80 0100 0145,127,cable_scrap waste from Bengaluru e_waste industry
+146,e_waste,cable_scrap,377,fair,Peenya Industrial Area,13.0855,77.5195,Factory_146,+91 80 0100 0146,93,cable_scrap waste from Bengaluru e_waste industry
+147,e_waste,cable_scrap,1854,fair,Whitefield,12.9389,77.7651,Factory_147,+91 80 0100 0147,92,cable_scrap waste from Bengaluru e_waste industry
+148,e_waste,cable_scrap,2274,fair,Tumkur Road Industrial,13.1321,77.5044,Factory_148,+91 80 0100 0148,94,cable_scrap waste from Bengaluru e_waste industry
+149,e_waste,cable_scrap,783,fair,Whitefield,12.9697,77.7712,Factory_149,+91 80 0100 0149,91,cable_scrap waste from Bengaluru e_waste industry
+150,e_waste,cable_scrap,3016,poor,Jigani Industrial Area,12.8608,77.6213,Factory_150,+91 80 0100 0150,70,cable_scrap waste from Bengaluru e_waste industry
+151,e_waste,electronic_components,1494,fair,Jigani Industrial Area,12.8503,77.5955,Factory_151,+91 80 0100 0151,50,electronic_components waste from Bengaluru e_waste industry
+152,e_waste,electronic_components,3940,poor,Peenya Industrial Area,13.036,77.5381,Factory_152,+91 80 0100 0152,35,electronic_components waste from Bengaluru e_waste industry
+153,e_waste,electronic_components,2348,poor,Kiadb Industrial Area,12.9972,77.5347,Factory_153,+91 80 0100 0153,36,electronic_components waste from Bengaluru e_waste industry
+154,e_waste,electronic_components,1640,good,Kiadb Industrial Area,13.0138,77.5244,Factory_154,+91 80 0100 0154,58,electronic_components waste from Bengaluru e_waste industry
+155,e_waste,electronic_components,2128,good,Jigani Industrial Area,12.8829,77.6034,Factory_155,+91 80 0100 0155,61,electronic_components waste from Bengaluru e_waste industry
+156,e_waste,electronic_components,1557,poor,Jigani Industrial Area,12.9189,77.6039,Factory_156,+91 80 0100 0156,34,electronic_components waste from Bengaluru e_waste industry
+157,e_waste,electronic_components,644,poor,Tumkur Road Industrial,13.1581,77.5315,Factory_157,+91 80 0100 0157,37,electronic_components waste from Bengaluru e_waste industry
+158,e_waste,electronic_components,1476,good,Tumkur Road Industrial,13.1559,77.5112,Factory_158,+91 80 0100 0158,59,electronic_components waste from Bengaluru e_waste industry
+159,e_waste,electronic_components,3785,good,Jigani Industrial Area,12.8611,77.557,Factory_159,+91 80 0100 0159,58,electronic_components waste from Bengaluru e_waste industry
+160,e_waste,electronic_components,3195,fair,Peenya Industrial Area,13.0808,77.5756,Factory_160,+91 80 0100 0160,49,electronic_components waste from Bengaluru e_waste industry
+161,paper,paper,3893,good,Tumkur Road Industrial,13.1249,77.4865,Factory_161,+91 80 0100 0161,12,mixed office and printing paper offcuts from Bengaluru printing units
+162,paper,paper,4258,good,Whitefield,12.9531,77.7692,Factory_162,+91 80 0100 0162,12,mixed office and printing paper offcuts from Bengaluru printing units
+163,paper,paper,3747,poor,Whitefield,12.9712,77.7754,Factory_163,+91 80 0100 0163,7,mixed office and printing paper offcuts from Bengaluru printing units
+164,paper,paper,553,good,Kiadb Industrial Area,13.0438,77.564,Factory_164,+91 80 0100 0164,12,mixed office and printing paper offcuts from Bengaluru printing units
+165,paper,paper,4136,good,Kiadb Industrial Area,12.9847,77.5591,Factory_165,+91 80 0100 0165,12,mixed office and printing paper offcuts from Bengaluru printing units
+166,paper,paper,3839,poor,Kiadb Industrial Area,13.0099,77.5517,Factory_166,+91 80 0100 0166,7,mixed office and printing paper offcuts from Bengaluru printing units
+167,paper,paper,3701,good,Peenya Industrial Area,13.0661,77.5157,Factory_167,+91 80 0100 0167,13,mixed office and printing paper offcuts from Bengaluru printing units
+168,paper,paper,4376,poor,Whitefield,12.9538,77.7372,Factory_168,+91 80 0100 0168,7,mixed office and printing paper offcuts from Bengaluru printing units
+169,paper,cardboard,4077,good,Tumkur Road Industrial,13.1427,77.5134,Factory_169,+91 80 0100 0169,10,baled corrugated cardboard from Bengaluru packaging and warehouse units
+170,paper,cardboard,1587,good,Kiadb Industrial Area,12.9806,77.5532,Factory_170,+91 80 0100 0170,10,baled corrugated cardboard from Bengaluru packaging and warehouse units
+171,paper,cardboard,1969,poor,Jigani Industrial Area,12.8503,77.5682,Factory_171,+91 80 0100 0171,6,baled corrugated cardboard from Bengaluru packaging and warehouse units
+172,paper,cardboard,3458,poor,Kiadb Industrial Area,12.9803,77.5588,Factory_172,+91 80 0100 0172,6,baled corrugated cardboard from Bengaluru packaging and warehouse units
+173,paper,cardboard,248,good,Whitefield,12.9839,77.7159,Factory_173,+91 80 0100 0173,10,baled corrugated cardboard from Bengaluru packaging and warehouse units
+174,paper,cardboard,2567,poor,Kiadb Industrial Area,13.0414,77.5691,Factory_174,+91 80 0100 0174,6,baled corrugated cardboard from Bengaluru packaging and warehouse units
+175,paper,cardboard,595,fair,Whitefield,12.9322,77.7085,Factory_175,+91 80 0100 0175,8,baled corrugated cardboard from Bengaluru packaging and warehouse units
+176,paper,cardboard,2263,fair,Jigani Industrial Area,12.904,77.6046,Factory_176,+91 80 0100 0176,8,baled corrugated cardboard from Bengaluru packaging and warehouse units
+177,glass,glass,676,poor,Kiadb Industrial Area,12.9958,77.5189,Factory_177,+91 80 0100 0177,4,sorted glass cullet from Bengaluru bottling and glassware units
+178,glass,glass,2100,poor,Jigani Industrial Area,12.8524,77.5503,Factory_178,+91 80 0100 0178,3,sorted glass cullet from Bengaluru bottling and glassware units
+179,glass,glass,2946,fair,Whitefield,12.9891,77.7377,Factory_179,+91 80 0100 0179,5,sorted glass cullet from Bengaluru bottling and glassware units
+180,glass,glass,1784,fair,Tumkur Road Industrial,13.1527,77.4976,Factory_180,+91 80 0100 0180,5,sorted glass cullet from Bengaluru bottling and glassware units
+181,glass,glass,3484,fair,Kiadb Industrial Area,13.0457,77.5097,Factory_181,+91 80 0100 0181,5,sorted glass cullet from Bengaluru bottling and glassware units
+182,glass,glass,2094,good,Whitefield,12.9711,77.7179,Factory_182,+91 80 0100 0182,6,sorted glass cullet from Bengaluru bottling and glassware units
+183,glass,glass,1353,good,Whitefield,12.9703,77.7568,Factory_183,+91 80 0100 0183,6,sorted glass cullet from Bengaluru bottling and glassware units
+184,glass,glass,1911,good,Kiadb Industrial Area,13.0382,77.5687,Factory_184,+91 80 0100 0184,6,sorted glass cullet from Bengaluru bottling and glassware units
+185,metal,metal,963,good,Jigani Industrial Area,12.8574,77.5863,Factory_185,+91 80 0100 0185,29,mixed aluminium and steel scrap from Bengaluru machining units
+186,metal,metal,4049,poor,Kiadb Industrial Area,13.0204,77.5848,Factory_186,+91 80 0100 0186,18,mixed aluminium and steel scrap from Bengaluru machining units
+187,metal,metal,336,good,Peenya Industrial Area,13.0352,77.5287,Factory_187,+91 80 0100 0187,31,mixed aluminium and steel scrap from Bengaluru machining units
+188,metal,metal,1613,good,Tumkur Road Industrial,13.0841,77.5416,Factory_188,+91 80 0100 0188,28,mixed aluminium and steel scrap from Bengaluru machining units
+189,metal,metal,1974,good,Jigani Industrial Area,12.903,77.5812,Factory_189,+91 80 0100 0189,31,mixed aluminium and steel scrap from Bengaluru machining units
+190,metal,metal,3803,fair,Tumkur Road Industrial,13.127,77.5293,Factory_190,+91 80 0100 0190,23,mixed aluminium and steel scrap from Bengaluru machining units
+191,metal,metal,1675,fair,Whitefield,12.9608,77.7225,Factory_191,+91 80 0100 0191,23,mixed aluminium and steel scrap from Bengaluru machining units
+192,metal,metal,1148,fair,Tumkur Road Industrial,13.0963,77.5223,Factory_192,+91 80 0100 0192,24,mixed aluminium and steel scrap from Bengaluru machining units
+193,biological,biological,1371,fair,Kiadb Industrial Area,12.9763,77.5311,Factory_193,+91 80 0100 0193,3,segregated food waste from Bengaluru canteens and food processors
+194,biological,biological,216,good,Peenya Industrial Area,13.0557,77.5742,Factory_194,+91 80 0100 0194,4,segregated food waste from Bengaluru canteens and food processors
+195,biological,biological,4905,fair,Tumkur Road Industrial,13.0912,77.5427,Factory_195,+91 80 0100 0195,3,segregated food waste from Bengaluru canteens and food processors
+196,biological,biological,266,fair,Kiadb Industrial Area,13.0339,77.5618,Factory_196,+91 80 0100 0196,3,segregated food waste from Bengaluru canteens and food processors
+197,biological,biological,715,fair,Whitefield,12.9564,77.7576,Factory_197,+91 80 0100 0197,3,segregated food waste from Bengaluru canteens and food processors
+198,biological,biological,2499,fair,Whitefield,12.9922,77.7282,Factory_198,+91 80 0100 0198,3,segregated food waste from Bengaluru canteens and food processors
+199,biological,biological,2638,good,Peenya Industrial Area,13.0457,77.569,Factory_199,+91 80 0100 0199,4,segregated food waste from Bengaluru canteens and food processors
+200,biological,biological,3305,fair,Tumkur Road Industrial,13.1237,77.5007,Factory_200,+91 80 0100 0200,3,segregated food waste from Bengaluru canteens and food processors
+201,trash,trash,108,fair,Whitefield,12.9455,77.7429,Factory_201,+91 80 0100 0201,2,mixed dry rejects from Bengaluru industrial estates
+202,trash,trash,715,good,Peenya Industrial Area,13.0326,77.5019,Factory_202,+91 80 0100 0202,2,mixed dry rejects from Bengaluru industrial estates
+203,trash,trash,3032,good,Whitefield,12.9409,77.7514,Factory_203,+91 80 0100 0203,2,mixed dry rejects from Bengaluru industrial estates
+204,trash,trash,2823,fair,Kiadb Industrial Area,13.035,77.5575,Factory_204,+91 80 0100 0204,2,mixed dry rejects from Bengaluru industrial estates
+205,trash,trash,1360,poor,Kiadb Industrial Area,12.982,77.5731,Factory_205,+91 80 0100 0205,1,mixed dry rejects from Bengaluru industrial estates
