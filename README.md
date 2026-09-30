@@ -28,7 +28,7 @@ flowchart LR
     BE --> ML
 
     subgraph ML[ml/]
-        CLS[Photo classifier<br/>YOLOv8n-cls + kNN unknown check]
+        CLS[Photo classifier<br/>YOLOv8s-cls + kNN unknown check]
         MEM[Feedback memory]
         EMB[Listing search<br/>MiniLM embeddings]
         MAT[Matcher<br/>distance, capacity, specialism]
@@ -75,14 +75,18 @@ data/raw/   synthetic listings, sample recyclers, carbon factors
 
 ## Model
 
+YOLOv8s-cls trained on clean item photos plus conveyor-belt crops, with blur, noise, JPEG, low-light
+and heavy-crop augmentation so it copes with poor phone photos.
+
 | Test | Result |
 |---|---|
-| Held-out test split (4,944 images) | 94.2% waste type, 91.3% sub-type |
-| External conveyor-belt images (ZeroWaste-style, 26,740 objects) | 15.3% |
+| Held-out test split (4,944 images) | 94.5% waste type, 91.7% sub-type |
+| Conveyor-belt objects never seen in training (ZeroWaste test split, 5,074) | 87.3% |
+| Corrupted photos (blur, noise, JPEG, low light) | 91.6%; 82.1% on corruption types not used in training |
 
-The model works well on single, clearly photographed items like its training data. It does not yet
-generalise to sorting-line or bulk-waste photos. Every prediction must be confirmed by the user
-before publishing, and unfamiliar photos are flagged as "Please confirm" or "Other / unknown".
+Unfamiliar photos are flagged as "Please confirm" or "Other / unknown", and every prediction is
+confirmed by the user before publishing. Bales and bulk loads (for example textile bales) are still
+the weakest case.
 
 Retrain: `python ml/classifier/train_yolo.py --auto` (CPU) or
 `python -m ml.classifier.kaggle_runner train` (Kaggle GPU, needs your own Kaggle API token).
@@ -93,6 +97,8 @@ Retrain: `python ml/classifier/train_yolo.py --auto` (CPU) or
   doi:10.17632/wds85kt64j.3 (CC BY 4.0)
 - Garbage Dataset v2: Suman Kunwar, Kaggle (MIT)
 - E Waste Image Dataset: Akshat Tamrakar, Kaggle (Apache 2.0)
+- ZeroWaste: Bashkirova et al., ZeroWaste Dataset: Towards Deformable Object Segmentation in Cluttered
+  Scenes, CVPR 2022 (conveyor-belt crops from its train and val splits; licence per the dataset page)
 - Carbon factors: US EPA WARM v13 (recycling and composting chapters), Cotton Incorporated LCA
 
 Image datasets are not included in this repository.
@@ -101,4 +107,4 @@ Image datasets are not included in this repository.
 
 - Listings and recycler profiles are synthetic; nothing here represents real trade data.
 - Carbon factors are US-based estimates, not India-specific LCA results.
-- The classifier has no polymer labels (PET, HDPE, PP) and is weak on conveyor-belt and bulk photos.
+- The classifier has no polymer labels (PET, HDPE, PP) and is still weak on bales and bulk loads.
