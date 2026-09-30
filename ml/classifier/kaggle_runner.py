@@ -57,6 +57,7 @@ KERNEL_TEMPLATE = Path(__file__).with_name("kaggle_kernel.py")
 STAGE = Path(os.environ.get("LOCALAPPDATA", tempfile.gettempdir())) / "materialmatch_kaggle"
 DATASET_SLUG = "materialmatch-cls-dataset"
 INPUTS_SLUG = "materialmatch-feedback-inputs"
+EVAL_SLUG = "materialmatch-eval-inputs"
 DONE = ("complete", "error", "cancel")
 
 
@@ -230,6 +231,31 @@ def upload_feedback_inputs(run_id: str) -> str:
     return ref
 
 
+def upload_eval_inputs(run_id: str, stems: list[str]) -> str:
+    """Weights to evaluate (+ best.* for comparison) and the feedback photos, as a private dataset."""
+    ref = f"{username()}/{EVAL_SLUG}"
+    stage = STAGE / "eval_inputs"
+    shutil.rmtree(stage, ignore_errors=True)
+    stage.mkdir(parents=True)
+    files = [W / f"{s}{x}" for s in ["best", *stems] for x in (".pt", ".ood.npz", ".hierarchy.json")]
+    missing = [f.name for f in files if not f.exists()]
+    if missing:
+        raise SystemExit(f"Missing weights: {', '.join(missing)}")
+    files += [FEEDBACK_DIR / "classifier_feedback.jsonl"]
+    files += sorted(p for p in (FEEDBACK_DIR / "images").rglob("*") if p.is_file())
+    with zipfile.ZipFile(stage / "inputs.zip", "w", zipfile.ZIP_DEFLATED) as z:
+        for p in files:
+            if p.exists():
+                z.write(p, p.relative_to(ROOT).as_posix())
+    print(f"Eval inputs: {len(stems)} candidate(s) + best.* + feedback photos -> PRIVATE dataset {ref}")
+    (stage / "manifest.json").write_text(json.dumps({"dataset": ref, "run_id": run_id}), encoding="utf-8")
+    metadata(stage, ref, "MaterialMatch eval inputs",
+             "Private: MaterialMatch classifier weights to evaluate + user-confirmed photos.")
+    publish_dataset(stage, ref, f"run {run_id}")
+    shutil.rmtree(stage, ignore_errors=True)
+    return ref
+
+
 # --------------------------------------------------------------------------- #
 # Kernel push / wait / fetch
 # --------------------------------------------------------------------------- #
@@ -387,6 +413,9 @@ def start(job: str, args: dict, sources: list[str], extra: dict, accelerator: st
     if job == "feedback":
         config["inputs_ref"] = upload_feedback_inputs(run_id)
         sources = sources + [config["inputs_ref"]]
+    elif job == "eval":
+        config["inputs_ref"] = upload_eval_inputs(run_id, args["weights"])
+        sources = sources + [config["inputs_ref"]]
     print(f"Starting Kaggle job '{name}' (run {run_id}) ...")
     kernel = push_kernel(name, config, sources, accelerator)
     run = {"run_id": run_id, "kernel": kernel, "pushed_at": datetime.now().isoformat(timespec="seconds"),
@@ -432,6 +461,34 @@ def cmd_feedback(a) -> int:
     return 0 if info.get("ok") else 1
 
 
+def install_eval(dest: Path) -> None:
+    """Copy the downloaded reports next to the local ones (never over an existing folder)."""
+    run_id = dest.name.split("_", 1)[1]
+    for rep in sorted((dest / "reports").iterdir()):
+        local = ROOT / "ml" / "classifier" / "reports" / rep.name
+        if local.exists():
+            local = local.with_name(f"{rep.name}_{run_id}")
+        if local.exists():                              # already installed by an earlier fetch
+            print(f"Report: {local} (already there)")
+            continue
+        shutil.copytree(rep, local)
+        print(f"Report: {local}")
+
+
+def cmd_eval(a) -> int:
+    man = upload_dataset()
+    run = start("eval", {"weights": a.weights}, [man["dataset"]],
+                {"dataset_ref": man["dataset"], "dataset_fingerprint": man["fingerprint"]}, a.accelerator)
+    if a.no_wait:
+        print("Not waiting. Later: python -m ml.classifier.kaggle_runner fetch eval")
+        return 0
+    dest, info = wait_and_fetch("eval", run)
+    summarize(info, dest)
+    if info.get("ok"):
+        install_eval(dest)
+    return 0 if info.get("ok") else 1
+
+
 def cmd_status(a) -> int:
     runs = load_state()["runs"]
     for name in ([a.job] if a.job else runs):
@@ -453,6 +510,8 @@ def cmd_fetch(a) -> int:
     if info.get("ok"):
         if run["config"]["job"] == "train":
             install_train(dest, run["run_id"], a.job)
+        elif run["config"]["job"] == "eval":
+            install_eval(dest)
         else:
             install_feedback(dest, a.promote)
     return 0 if info.get("ok") else 1
@@ -507,6 +566,11 @@ def main(argv=None) -> int:
     f.add_argument("--max-leaf-drop", type=float, default=1.0)
     common(f)
     f.set_defaults(fn=cmd_feedback)
+
+    e = sub.add_parser("eval", help="evaluate_classifier + evaluate_real_photos on the Kaggle GPU")
+    e.add_argument("--weights", nargs="+", required=True, help="weights stems in weights/, e.g. kaggle_candidate_robusts")
+    common(e)
+    e.set_defaults(fn=cmd_eval)
 
     s = sub.add_parser("status")
     s.add_argument("job", nargs="?", help="run name: train, feedback or train-<tag>")

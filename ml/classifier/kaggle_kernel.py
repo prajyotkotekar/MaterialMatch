@@ -160,6 +160,21 @@ def main():
         if rc == 0 and run("calibrate", [PY, "-m", "ml.classifier.calibrate_ood", "--weights",
                                          OUT / "weights" / w.name, "--dataset", dataset]) != 0:
             fail("calibration failed")
+    elif CONFIG["job"] == "eval":
+        in_root, man = dataset_root(CONFIG["inputs_ref"])
+        if man.get("run_id") != CONFIG["run_id"]:
+            fail(f"eval inputs are from run {man.get('run_id')}, expected {CONFIG['run_id']}; rerun")
+        overlay = unpack(in_root, "inputs.zip", "classifier_feedback.jsonl", "/tmp/mm_inputs").parents[1]
+        shutil.copytree(overlay, ROOT, dirs_exist_ok=True)
+        w = ROOT / "ml" / "classifier" / "weights"
+        for stem in a["weights"]:
+            if run(f"evaluate {stem}", [PY, "-m", "ml.classifier.evaluate_classifier", "--weights", w / f"{stem}.pt",
+                                        "--skip-old", "--dataset", dataset, "--out", OUT / "reports" / f"eval_{stem}"]):
+                fail(f"evaluate_classifier failed for {stem}")
+        if run("real photos", [PY, "-m", "ml.classifier.evaluate_real_photos", "--weights", w / "best.pt",
+                               *[w / f"{s}.pt" for s in a["weights"]]]) == 0:
+            shutil.copytree(ROOT / "ml" / "classifier" / "reports" / "real_photos", OUT / "reports" / "real_photos",
+                            dirs_exist_ok=True)
     else:
         fail(f"unknown job {CONFIG['job']}")
 
