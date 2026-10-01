@@ -44,8 +44,6 @@ st.logo(str(HERE / "assets" / "logo.svg"), size="large")
 
 if "my_listings" not in st.session_state:
     st.session_state.my_listings = []
-if "selected_listing_id" not in st.session_state:
-    st.session_state.selected_listing_id = None
 # Streamlit drops widget state for widgets not rendered this run; re-assigning keeps form values across pages.
 for _k in list(st.session_state.keys()):
     if (_k in ("wt", "sub", "qty", "loc", "photo_mode", "feed_query", "feed_wt", "feed_sub", "feed_minq", "feed_qual", "feed_loc")

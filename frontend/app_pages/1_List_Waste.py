@@ -6,9 +6,9 @@ import streamlit as st
 
 import visuals as vz
 from backend import feedback_store
-from common import (ALL_WASTE_TYPES, CO2E_EXPLAINER, SESSION_ID_START, all_listings, carbon_label,
+from common import (ALL_WASTE_TYPES, CO2E_EXPLAINER, SESSION_ID_START, carbon_label,
                     classify_bytes, fmt_kg, get_classifier, kpi, quality_label, recycler_card, results_map,
-                    section_title, recycler_profiles, seller_display, step_title, sub_label, waste_label,
+                    section_title, recycler_profiles, step_title, sub_label, waste_label,
                     zone_coords, zones)
 from ml.embeddings import load_listings
 from ml.carbon import co2e_saved, load_factors
@@ -89,14 +89,6 @@ def form_subtype(pred: dict) -> str:
     """Form value for the predicted sub-type: only at >= SUBTYPE_AUTOFILL_MIN, else 'Not sure' (user picks)."""
     sub = predicted_sub(pred)
     return sub if sub and sub_confidence(pred) >= SUBTYPE_AUTOFILL_MIN else "unknown"
-
-
-def load_listing(waste_id: int) -> None:
-    row = all_listings().set_index("waste_id").loc[waste_id]
-    ss.wt, ss.qty, ss.loc = row["waste_type"], int(row["quantity_kg"]), row["location_name"]
-    ss.sub = row["sub_type"] if row["sub_type"] in sub_options(row["waste_type"]) else "unknown"
-    ss.selected_listing_id = waste_id
-    ss.show_results = True
 
 
 def save_feedback(sig: str) -> None:
@@ -320,19 +312,7 @@ loop_col, details_col = st.columns([5, 7], gap="medium")
 with details_col:
     with st.container(border=True, key="card_details", gap="small"):
         multi = len(groups) > 1
-        with st.container(horizontal=True, vertical_alignment="center", horizontal_alignment="distribute"):
-            step_title(3, "Details", f"{len(groups)} items" if multi else "")
-            with st.popover("Use a listing", icon=":material/list_alt:", type="tertiary", disabled=multi,
-                            help="Switch to a single item to load an existing listing." if multi else None):
-                listings = all_listings()
-                # no internal waste_id in the label (as on "I need feedstock"): material, amount, place, seller
-                labels = {int(r.waste_id): f"{sub_label(r.sub_type)}, {r.quantity_kg:,} kg, {r.location_name}, "
-                                           + (f"{r.seller_name} (yours)" if r.source != "Demo"
-                                              else seller_display(r.seller_name))
-                          for r in listings.itertuples()}
-                pick = st.selectbox("Marketplace listing", list(labels), format_func=labels.get)
-                st.button("Match this listing", icon=":material/bolt:", on_click=load_listing, args=(pick,),
-                          width="stretch")
+        step_title(3, "Details", f"{len(groups)} items" if multi else "")
 
         if not multi:
             c1, c2 = st.columns(2, gap="small")
@@ -517,7 +497,6 @@ with actions:  # next to "Find matching recyclers", available from the start
                             f" / {sub_label(it['feedback_sub'])}" if it["feedback_sub"]
                             and it["feedback_sub"] != it["feedback"] else "")) if it["feedback"] else "",
                     })
-                ss.selected_listing_id = SESSION_ID_START + len(ss.my_listings)
                 ss.just_published = submission
                 st.success(f"Published as submission {submission}. See “Your published listings” "
                            "at the bottom of the page.", icon=":material/check_circle:")
