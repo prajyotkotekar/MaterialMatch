@@ -28,6 +28,7 @@ WASTE_COLOR = {"construction": "#B48F6E", "e_waste": "#8BA8D4", "plastic": "#E39
 TOKENS = {"ground": "#000000", "panel": "#0C0D0C", "raised": "#151715", "line": "#232723", "line-strong": "#363B36",
           "text": "#F2F3EE", "muted": "#A4ABA2", "faint": "#7B8379", "bone": "#F1F0E8", "ink": "#0C0D0C",
           "lime": "#C6F25A", "amber": "#F2AE4A", "red": "#EC857C"}
+QUALITY_LABEL = {"good": "Grade A", "fair": "Grade B", "poor": "Grade C"}
 SESSION_ID_START = 10_000
 CO2E_EXPLAINER = "Estimated impact from diverting this material to reuse/recycling."
 RAW_DIR = ROOT / "data" / "raw"
@@ -49,10 +50,15 @@ def type_tag(t: str) -> str:
     return f'<span class="mm-tag" style="--c:{material_color(t)}"><i></i>{html.escape(waste_label(t))}</span>'
 
 
+def quality_label(q: str) -> str:
+    """Display name of a quality grade. Data and API keep good / fair / poor."""
+    return QUALITY_LABEL.get(str(q).lower(), str(q).capitalize())
+
+
 def quality_tag(q: str) -> str:
     q = str(q).lower()
-    return (f'<span class="mm-q mm-q-{html.escape(q)}" title="{html.escape(q.capitalize())} quality">'
-            f'<b><i></i><i></i><i></i></b>{html.escape(q.capitalize())}</span>')
+    return (f'<span class="mm-q mm-q-{html.escape(q)}" title="{html.escape(quality_label(q))}">'
+            f'<b><i></i><i></i><i></i></b>{html.escape(quality_label(q))}</span>')
 
 
 def carbon_label(is_proxy: bool) -> str:
@@ -93,14 +99,6 @@ def step_title(n: int, text: str, note: str = "") -> None:
     extra = f'<span class="mm-step-note">{html.escape(note)}</span>' if note else ""
     st.markdown(f'<div class="mm-step"><span class="mm-step-n">{n:02d}</span><span>{html.escape(text)}</span>{extra}</div>',
                 unsafe_allow_html=True)
-
-
-def log_classification(pred: dict, n_photos: int, source: str) -> None:
-    """Session history of new predictions (for the dashboard and Present page). Never written to disk."""
-    log = st.session_state.setdefault("class_log", [])
-    log.append({"time": pd.Timestamp.now(), "waste_type": pred.get("label"), "sub_type": pred.get("sub_type"),
-                "confidence": float(pred.get("confidence") or 0), "status": pred.get("status") or
-                ("unknown" if pred.get("is_unknown") else "detected"), "photos": n_photos, "source": source})
 
 
 # ---------- data ----------
@@ -197,7 +195,7 @@ def kpi(key: str, label: str, value: str, note: str | None = None, help: str | N
 
 def cost_by_quality_kpi(top_by_quality: dict, need_kg: float, help: str | None = None) -> None:
     """KPI card: what `need_kg` would cost per quality grade, from the best-ranked listing of each.
-    top_by_quality maps 'good'/'fair'/'poor' to a listing dict (or None when there is none)."""
+    top_by_quality maps 'good'/'fair'/'poor' (shown as Grade A/B/C) to a listing dict (or None when there is none)."""
     with st.container(border=True, key="card_cost", gap="xsmall", height="stretch"):
         st.markdown(":small[Cost for your quantity]", help=help)
         # one horizontal row per grade: grade on the left, total + ₹/kg on the right
@@ -456,7 +454,7 @@ def listing_dialog(r: dict, need_kg: float = 0) -> None:
             ("Proximity", "distance",
              (f"{r['distance_km']:.1f} km away. The score halves roughly every {DISTANCE_SCALE_KM * math.log(2):.0f} km."
               if r.get("distance_km") is not None else "No location chosen, so every listing scores the same.")),
-            ("Quality", "quality", f"{r['quality'].capitalize()} quality (good 100%, fair 70%, poor 40%)."),
+            ("Quality", "quality", f"{quality_label(r['quality'])} (Grade A 100%, Grade B 70%, Grade C 40%)."),
         ]
         for label, k, text in rows:
             st.progress(min(max(b[k], 0.0), 1.0), text=f"{label}: {b[k]:.0%}, weight {w[k]:.0%}")

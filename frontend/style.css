@@ -213,6 +213,42 @@ h1 { line-height: 1.05 !important; }
 @keyframes mm-rise { from { opacity: 0; transform: translateY(0.4rem); } }
 @keyframes mm-count { from { --p: 0; } }
 
+/* best match on "I need feedstock": a seller card, flagged in lime, with one check per buyer criterion */
+.mm-match { background: var(--mm-bone); color: var(--mm-ink); border-radius: 3px; overflow: hidden;
+  border-left: 0.6rem solid var(--c); container-type: inline-size; }
+.mm-match .mm-ico { font-family: "Material Symbols Rounded"; font-weight: normal; font-style: normal; line-height: 1; }
+.mm-match-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.55rem 1.25rem;
+  background: var(--mm-lime); }
+.mm-match-flag { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; font-weight: 750; font-stretch: 108%; }
+.mm-match-flag .mm-ico { font-size: 1.2rem; }
+.mm-match-src { flex: none; padding: 0.05rem 0.45rem; border: 1px solid rgba(12, 13, 12, 0.45); border-radius: 2px;
+  font-size: 0.75rem; font-weight: 600; }
+.mm-match-body { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem 0.95rem; }
+.mm-match-main { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; min-width: 0; }
+.mm-match-name { font-size: clamp(1.6rem, 7cqi, 2.6rem); font-weight: 750; font-stretch: 118%; line-height: 1;
+  letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.mm-match-offer { font-size: 1.02rem; font-weight: 600; }
+.mm-match-where { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.86rem; color: #3D443D; }
+.mm-match-where .mm-ico { font-size: 1rem; }
+.mm-match-checks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 0 !important;
+  padding: 0 !important; list-style: none; background: rgba(12, 13, 12, 0.13); border-top: 1px solid rgba(12, 13, 12, 0.13); }
+.mm-match-checks li { display: grid; grid-template-columns: 1.3rem minmax(0, 1fr); column-gap: 0.5rem; align-content: start;
+  margin: 0; padding: 0.7rem 0.9rem; background: var(--mm-bone); font-size: 0.78rem; line-height: 1.3; }
+.mm-match-checks li > .mm-ico { grid-row: span 3; display: grid; place-items: center; width: 1.3rem; height: 1.3rem;
+  border-radius: 50%; background: var(--mm-ink); color: var(--mm-lime); font-size: 0.95rem; font-weight: 700; }
+.mm-match-checks li.mm-open > .mm-ico { background: #CFCEC6; color: var(--mm-ink); }
+.mm-match-checks span:not(.mm-ico), .mm-match-checks small { color: #5A6157; }
+.mm-match-checks b { font-size: 0.9rem; font-weight: 650; }
+.mm-match-checks small { font-size: 0.72rem; }
+.mm-reveal .mm-match-name { animation: mm-rise 0.5s 0.18s cubic-bezier(.2, .7, .2, 1) both; }
+@media (max-width: 640px) {
+  .mm-match-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mm-match-body { padding: 0.9rem 1rem; }
+  .mm-match .mm-ring { width: 5.5rem; }
+  .mm-match .mm-ring-n { font-size: 1.25rem; margin-top: 0; }
+  .mm-match .mm-ring-l { display: none; }
+}
+
 /* supporting facts around the result */
 .mm-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.4rem; }
 .mm-facts > div { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.7rem 0.85rem; background: var(--mm-ground);
@@ -392,15 +428,6 @@ button:focus-visible, a:focus-visible, [data-testid="stTopNavLink"]:focus-visibl
   .mm-ft-m { grid-area: 1 / 1; } .mm-ft-b { grid-area: 1 / 2; }
   .mm-ft-v { grid-area: 2 / 1 / 3 / 3; } .mm-ft-s { grid-area: 3 / 1 / 4 / 3; } .mm-ft-note { grid-area: 4 / 1 / 5 / 3; }
 }
-
-/* ---------- presentation mode ---------- */
-.mm-present-h { margin: 0 0 1rem; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 650; font-stretch: 116%; line-height: 1.05;
-  letter-spacing: -0.02em; }
-.st-key-present .mm-res-name { font-size: clamp(2rem, 7.5cqi, 5.5rem); }
-.st-key-present .mm-ring { width: 10rem; }
-.st-key-present .mm-ring-dial { mask: radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px));
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px)); }
-.st-key-present .mm-ring-n { font-size: 2.3rem; }
 
 /* ---------- footer ---------- */
 .mm-foot { margin-top: 2.5rem; padding-top: 0.9rem; border-top: 1px solid var(--mm-line); font-size: 0.8rem; color: var(--mm-faint); max-width: 90ch; }

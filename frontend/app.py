@@ -62,7 +62,6 @@ st.session_state.nav = {
     "feedstock": st.Page(PAGES / "2_Find_Matches.py", title="I need feedstock", url_path="feedstock"),
     # the carbon factors are a tab on the Impact page
     "impact": st.Page(PAGES / "3_Impact_Dashboard.py", title="Impact", url_path="impact"),
-    "present": st.Page(PAGES / "4_Present.py", title="Present", url_path="present"),
 }
 page = st.navigation(list(st.session_state.nav.values()), position="top")
 

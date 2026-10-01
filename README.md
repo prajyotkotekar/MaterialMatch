@@ -15,7 +15,6 @@ Manufacturers can search listed waste in plain words.
   cost and CO₂e for the quantity needed.
 - **Impact**: potential CO₂e of the listings by zone and by sub-type (proxy-based estimates hatched), the
   biggest lever in the current selection, and the carbon factor table with sources.
-- **Present**: a full-width live classification view for demos (large result, recovery loop, session history).
 - **Feedback loop**: users confirm or correct predictions; confirmed photos adjust similar future
   predictions right away and can be used for a gated retrain.
 
@@ -68,7 +67,7 @@ first use.
 ## Project layout
 
 ```
-frontend/   Streamlit pages (I have waste, I need feedstock, Impact, Present) and visuals.py
+frontend/   Streamlit pages (I have waste, I need feedstock, Impact) and visuals.py
 backend/    FastAPI routes: listings, match, classify, feedback
 ml/         taxonomy, carbon, embeddings, matcher, evaluation
 ml/classifier/   dataset build, training, prediction, unknown detection, feedback learning, evaluation

@@ -7,7 +7,7 @@ import streamlit as st
 import visuals as vz
 from backend import feedback_store
 from common import (ALL_WASTE_TYPES, CO2E_EXPLAINER, SESSION_ID_START, all_listings, carbon_label,
-                    classify_bytes, fmt_kg, get_classifier, kpi, log_classification, recycler_card, results_map,
+                    classify_bytes, fmt_kg, get_classifier, kpi, quality_label, recycler_card, results_map,
                     section_title, recycler_profiles, seller_display, step_title, sub_label, waste_label,
                     zone_coords, zones)
 from ml.embeddings import load_listings
@@ -282,7 +282,6 @@ with ident_col:
                     per_photo = pred.get("per_image") if len(results) > 1 else None
                     if pred:
                         fresh.add(sig)
-                        log_classification(pred, len(files), "I have waste")
                 except (ValueError, TypeError):
                     error = "Couldn't read this image" if len(files) == 1 else "Couldn't read one of the photos"
             if pred:
@@ -419,7 +418,7 @@ def price_help(quality: str) -> str:
             lo, hi = int(p.min()), int(p.max())
             ranges.append(f"{sub_label(sub).lower()} ₹{lo}/kg" if lo == hi else f"{sub_label(sub).lower()} ₹{lo}–{hi}/kg")
     if ranges:
-        text += (f" For reference, demo listings in {quality} quality ask: {'; '.join(ranges)} "
+        text += (f" For reference, {quality_label(quality)} demo listings ask: {'; '.join(ranges)} "
                  "(demo values, not a market quote).")
     return text
 
@@ -464,7 +463,7 @@ with actions:  # next to "Find matching recyclers", available from the start
             p3.number_input("Quantity (kg)", min_value=0, step=100, key=pub_qty, on_change=publish_qty_changed,
                             args=(qty_key, pub_qty), label_visibility=vis)
             if not multi_pub:
-                quality = p4.selectbox("Quality", quality_opts, index=1, format_func=str.capitalize)
+                quality = p4.selectbox("Quality", quality_opts, index=1, format_func=quality_label)
                 price = p5.number_input("Price (₹/kg)", min_value=0, value=0, step=1, key="pub_price",
                                         help=price_help(quality))
         # 2) Where the buyer collects / delivers: only recyclers that accept the chosen type(s).
@@ -476,7 +475,7 @@ with actions:  # next to "Find matching recyclers", available from the start
         # 3) Quality / price (several photos share them), then who is selling and how buyers reach them.
         if multi_pub:
             q1, q2 = st.columns(2, gap="small")
-            quality = q1.selectbox("Quality", quality_opts, index=1, format_func=str.capitalize)
+            quality = q1.selectbox("Quality", quality_opts, index=1, format_func=quality_label)
             price = q2.number_input("Price (₹/kg)", min_value=0, value=0, step=1, key="pub_price",
                                     help=price_help(quality))
         s1, s2 = st.columns(2, gap="small")
@@ -602,6 +601,7 @@ if ss.my_listings:
                      expanded=bool(ss.pop("just_published", None))):
         published = pd.DataFrame(ss.my_listings[::-1])
         published["price_per_kg"] = published["price_per_kg"].where(published["price_per_kg"] > 0)  # 0 = not set
+        published["quality"] = published["quality"].map(quality_label)
         st.dataframe(
             published.reindex(columns=[
                 "submission_id", "waste_id", "waste_type", "sub_type", "quantity_kg", "location_name",

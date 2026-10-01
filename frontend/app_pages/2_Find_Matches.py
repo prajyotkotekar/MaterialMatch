@@ -4,8 +4,8 @@ import streamlit as st
 
 import visuals as vz
 from common import (ALL_WASTE_TYPES, all_listings, cost_by_quality_kpi, fmt_kg, kpi, listing_card, listing_carbon_text,
-                    listing_dialog, price_text, results_map, section_title, seller_display, step_title, sub_label,
-                    waste_label, zone_coords, zones)
+                    listing_dialog, price_text, quality_label, results_map, section_title, seller_display, step_title,
+                    sub_label, waste_label, zone_coords, zones)
 from ml.embeddings import load_listings
 from ml.matcher import embedding_backend, find_listings
 
@@ -56,7 +56,7 @@ with st.container(border=True, key="card_search", gap="small"):
     g1, g2 = st.columns([1, 1], gap="small")
     with g1:
         qual = st.pills("Quality", ["good", "fair", "poor"], selection_mode="multi",
-                        format_func=str.capitalize, key="feed_qual")
+                        format_func=quality_label, key="feed_qual")
     loc = g2.selectbox("Deliver to", zones().index, key="feed_loc")
 
 lat, lon = zone_coords(loc)
@@ -71,7 +71,7 @@ results = matches[:SHOWN]
 st.space("medium")
 with st.container(horizontal=True, vertical_alignment="bottom"):
     with st.container(gap="xxsmall"):
-        step_title(2, "Best match" if has_query else "Top result")
+        step_title(2, "Best match")
         if has_query:  # no caption when browsing (removed at the user's request)
             st.caption(f"Ranked for “{query.strip()}”, delivered to {loc}")
     n_mine = sum(not r["is_synthetic"] for r in results)
@@ -80,7 +80,7 @@ with st.container(horizontal=True, vertical_alignment="bottom"):
 
 if not results:
     st.html('<div class="mm-empty mm-gridbg"><b>No listings match these filters</b><p>Try another sub-type, a lower '
-            "quantity, or a wider quality range.</p></div>")
+            "quantity, or more quality grades.</p></div>")
     st.stop()
 
 top = results[0]
@@ -117,18 +117,37 @@ spot_col, map_col = st.columns([7, 5], gap="medium")
 with spot_col:
     reveal = ss.get("p2_top") != top["waste_id"]  # animate only when the top listing changes
     ss.p2_top = top["waste_id"]
-    dist = f", {top['distance_km']:.1f} km away" if top.get("distance_km") is not None else ""
     yours = top.get("source") == "Your listing"
-    st.html(vz.spotlight_html(
-        f"Best match for “{query.strip()}”" if has_query else "Nearest, best-quality listing",
-        sub_label(top["sub_type"]),
-        f"{top['quantity_kg']:,} kg from {seller_display(top['seller_name'])}, {top['location_name']}{dist}",
-        vz.chip("Your listing") if yours else vz.chip("Demo listing", "off"),
-        float(top["score"]), "match" if has_query else "score", vz.material_color(top["waste_type"]), reveal))
+    km = top.get("distance_km")
+    # one check per criterion the buyer set, so the card reads as "this seller fits what you asked for"
+    if has_query:
+        material_note = f"Closest to “{query.strip()}”"
+    elif sub != "any":
+        material_note = "The sub-type you chose"
+    elif wt != "any":
+        material_note = f"{waste_label(wt)}, as chosen"
+    else:
+        material_note = "Any material"
+    nearest = km is not None and km <= min(r["distance_km"] for r in matches if r.get("distance_km") is not None)
+    checks = [
+        ("Material", sub_label(top["sub_type"]), material_note, True),
+        ("Quantity", f"{top['quantity_kg']:,} kg available",
+         f"Covers your {need:,.0f} kg" if need > 0 else "Enter the quantity you need", need > 0),
+        ("Quality", quality_label(top["quality"]),
+         "The top grade" if top["quality"] == "good" else "Within your quality filter", True),
+        ("Distance", f"{km:.1f} km" if km is not None else "Not known",
+         (f"Nearest of {len(matches)} listings" if nearest else f"To your site at {loc}"), km is not None),
+    ]
+    st.html(vz.match_html(
+        f"Best match for “{query.strip()}”" if has_query else "Best match for your criteria",
+        "Your listing" if yours else "Demo listing",
+        seller_display(top["seller_name"]),
+        f"{sub_label(top['sub_type'])}, {top['quantity_kg']:,} kg, {quality_label(top['quality'])}",
+        f"{top['location_name']}" + (f", {km:.1f} km from your site" if km is not None else ""),
+        checks, float(top["score"]), "match" if has_query else "score", vz.material_color(top["waste_type"]), reveal))
     st.html(vz.cells_html([
         ("Price", price_text(top, need), "Indicative, not a quote"),
         ("CO₂e", listing_carbon_text(top, need).replace(":material/eco: ", "", 1), "vs. virgin material"),
-        ("Quality", top["quality"].capitalize(), waste_label(top["waste_type"])),
         ("Contact", top.get("seller_contact") or "Not listed", "Demo placeholder" if not yours else "As entered"),
     ]))
     if st.button("Details & contact", key=f"spot_contact_{top['waste_id']}", icon=":material/contact_page:",
@@ -145,7 +164,7 @@ with map_col:
                      for i, r in enumerate(results)],
                     height=360, origin_label=f"Your site at {loc}", points_label="Listings")
         st.caption(f"Matched on meaning, not exact words ({html.escape(embedding_backend())})." if has_query
-                   else "Browsing: sorted by distance and quality.")
+                   else "Browsing: sorted by distance and quality grade.")
 
 # ---------------------------------------------------------------- 03 compare the rest
 if len(results) > 1:

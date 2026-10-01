@@ -204,6 +204,24 @@ def spotlight_html(kicker: str, name: str, line: str, chip: str, pct: float, rin
             + f"{chip}</div>{_ring(pct, color, size, ring_label)}</div></div>")
 
 
+def match_html(flag: str, source: str, seller: str, offer: str, where: str, checks: list[tuple[str, str, str, bool]],
+               pct: float, ring_label: str, color: str, reveal: bool = False) -> str:
+    """The top listing on 'I need feedstock' as a seller card: who sells it, what and where, the match score,
+    and one check per buyer criterion. checks = (criterion, value, note, met)."""
+    items = "".join(
+        f'<li class="{"" if met else "mm-open"}"><span class="mm-ico" aria-hidden="true">{"check" if met else "remove"}</span>'
+        f'<span>{esc(k)}</span><b>{esc(v)}</b><small>{esc(n)}</small></li>' for k, v, n, met in checks)
+    cls = "mm-match" + (" mm-reveal" if reveal else "")
+    return (f'<div class="{cls}" style="--c:{color}">'
+            f'<div class="mm-match-top"><span class="mm-match-flag"><span class="mm-ico" aria-hidden="true">verified</span>'
+            f'{esc(flag)}</span><span class="mm-match-src">{esc(source)}</span></div>'
+            f'<div class="mm-match-body"><div class="mm-match-main"><b class="mm-match-name">{esc(seller)}</b>'
+            f'<span class="mm-match-offer">{esc(offer)}</span>'
+            f'<span class="mm-match-where"><span class="mm-ico" aria-hidden="true">location_on</span>{esc(where)}</span></div>'
+            f'{_ring(pct, color, "lg", ring_label)}</div>'
+            f'<ul class="mm-match-checks" aria-label="How this listing meets your criteria">{items}</ul></div>')
+
+
 def chip(text: str, kind: str = "ok") -> str:
     return f'<span class="mm-chip mm-chip-{kind}">{esc(text)}</span>'
 
