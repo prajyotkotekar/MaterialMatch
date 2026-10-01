@@ -397,9 +397,10 @@ def listing_card(r: dict, rank: int, need_kg: float = 0) -> None:
                 unsafe_allow_html=True, width="content")
         dist = f", {r['distance_km']:.1f} km" if r.get("distance_km") is not None else ""
         carbon = listing_carbon_text(r, need_kg).replace(":material/eco: ", "", 1)
+        # CO2e always on its own line, so every card has the same layout whatever the text length
         st.markdown(meta_row(f"{icon('location_on')} {html.escape(r['location_name'])}{dist}",
-                             f"{icon('sell')} {html.escape(price_text(r, need_kg))}",
-                             f'<span class="mm-carbon">{icon("eco")} {html.escape(carbon)}</span>'),
+                             f"{icon('sell')} {html.escape(price_text(r, need_kg))}")
+                    + meta_row(f'<span class="mm-carbon">{icon("eco")} {html.escape(carbon)}</span>'),
                     unsafe_allow_html=True)
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
             st.markdown(meta_row(f"{icon('storefront')} {html.escape(seller_display(r['seller_name']))}",
