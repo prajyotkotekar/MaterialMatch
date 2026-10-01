@@ -126,9 +126,6 @@ with overview_tab:
                      "proxy": r.proxy_co2 > 0.5 * r.co2} for r in ranks.itertuples()])
                     + vz.legend_html([t for t in present if t in set(ranks["waste_type"])], proxy_key=True))
 
-        st.caption("Concrete and brick have very small CO₂e factors; their main benefit is avoided quarrying and "
-                   "landfill space, which these figures do not capture. Mixed trash is left out of this view: it "
-                   "has no recovery route and no carbon factor.")
 
 with factors_tab:
     f = load_factors().reset_index()
