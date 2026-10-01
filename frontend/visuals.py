@@ -280,3 +280,88 @@ def loop_html(waste_type: str | None, sub_type: str | None = None) -> str:
   </div>
   <ol class="mm-loop-list">{legend}</ol>
 </div>"""
+
+
+# ---------- impact page: zone board, CO2e ranking, factor table ----------
+
+# Stacking/legend order chosen so neighbouring colours stay apart (checked for colour-blind separation).
+SEGMENT_ORDER = ["biological", "textile", "paper", "e_waste", "construction", "glass", "plastic", "metal"]
+
+
+def mass(kg: float) -> str:
+    return f"{kg / 1000:,.1f} t" if kg >= 1000 else f"{kg:,.0f} kg"
+
+
+def legend_html(types, proxy_key: bool = False) -> str:
+    """Material swatches in SEGMENT_ORDER; proxy_key adds the solid / hatched key of the CO2e bars."""
+    order = [t for t in SEGMENT_ORDER if t in types] + [t for t in types if t not in SEGMENT_ORDER]
+    items = "".join(f'<span style="--c:{material_color(t)}"><i></i>{esc(waste_label(t))}</span>' for t in order)
+    if proxy_key:
+        items += ('<span class="mm-key" style="--c:#A4ABA2"><i></i>Sourced factor</span>'
+                  '<span class="mm-key" style="--c:#A4ABA2"><i class="mm-px"></i>Proxy estimate</span>')
+    return f'<div class="mm-legend">{items}</div>'
+
+
+def zone_board_html(zones: list[dict]) -> str:
+    """One row per zone: listings, waste, CO2e potential, and a bar split by material.
+    zones = [{name, listings, kg, co2, mix: {waste_type: kg}}], already sorted; bars share one scale."""
+    top = max((z["kg"] for z in zones), default=0) or 1
+    rows = []
+    for i, z in enumerate(zones):
+        segs = "".join(
+            f'<i style="--c:{material_color(t)};flex:{kg:.3f}" tabindex="0" '
+            f'data-tip="{esc(waste_label(t))}: {mass(kg)}, {kg / z["kg"]:.0%} of this zone"></i>'
+            for t in SEGMENT_ORDER + [t for t in z["mix"] if t not in SEGMENT_ORDER]
+            if (kg := z["mix"].get(t, 0)) > 0)
+        rows.append(
+            f'<div class="mm-zr" style="--d:{i * 70}ms"><span class="mm-zr-i">{i + 1}</span>'
+            f'<b class="mm-zr-name">{esc(z["name"])}</b><span class="mm-zr-n">{z["listings"]}</span>'
+            f'<span class="mm-zr-kg">{mass(z["kg"])}</span><span class="mm-zr-co2">{mass(z["co2"])}</span>'
+            f'<div class="mm-zr-bar" style="width:{100 * z["kg"] / top:.1f}%">{segs}</div></div>')
+    head = ('<div class="mm-zr mm-zr-h"><span class="mm-zr-i"></span><span class="mm-zr-name">Zone</span>'
+            '<span class="mm-zr-n">Listings</span><span class="mm-zr-kg">Waste</span>'
+            '<span class="mm-zr-co2">CO₂e potential</span></div>')
+    return f'<div class="mm-board">{head}{"".join(rows)}</div>'
+
+
+def co2_rank_html(rows: list[dict]) -> str:
+    """Ranked CO2e bars per sub-type: rows = [{label, waste_type, co2, kg, proxy}], sorted, largest first.
+    Proxy-based estimates are hatched so they never pass for sourced figures."""
+    top = max((r["co2"] for r in rows), default=0) or 1
+    out = []
+    for i, r in enumerate(rows):
+        basis = "proxy estimate" if r["proxy"] else "sourced factor"
+        tip = f'{waste_label(r["waste_type"])}, {mass(r["kg"])} listed, {basis}'
+        out.append(
+            f'<div class="mm-rk" style="--c:{material_color(r["waste_type"])};--d:{i * 35}ms">'
+            f'<span class="mm-rk-l"><i></i>{esc(r["label"])}</span>'
+            f'<span class="mm-rk-track"><i class="{"mm-px" if r["proxy"] else ""}" tabindex="0" data-tip="{esc(tip)}" '
+            f'style="width:max(3px, {100 * r["co2"] / top:.2f}%)"></i></span><b>{mass(r["co2"])}</b></div>')
+    return f'<div class="mm-rank-list">{"".join(out)}</div>'
+
+
+def factor_table_html(rows: list[dict]) -> str:
+    """Carbon factors as rows: material, factor bar, basis, source link, then method and notes.
+    rows = [{sub, waste_type, factor, proxy, method, url, notes}]; render with st.markdown (keeps link targets)."""
+    top = max((r["factor"] for r in rows), default=0) or 1
+    out = []
+    for r in rows:
+        url = r["url"]
+        domain = url.split("//", 1)[-1].split("/", 1)[0].removeprefix("www.") if url else ""
+        source = (f'<a href="{esc(url)}" target="_blank" rel="noopener">{esc(domain)}</a>' if url
+                  else '<span class="mm-ft-none" title="Derived from other rows, see the method">Derived</span>')
+        method, notes = r["method"].strip(), r["notes"].strip()
+        if method and notes and not method.endswith("."):
+            method += "."
+        note = " ".join(x for x in (method, notes) if x)
+        out.append(
+            f'<div class="mm-ft-r" style="--c:{material_color(r["waste_type"])}">'
+            f'<div class="mm-ft-m"><b>{esc(r["sub"])}</b><span><i></i>{esc(waste_label(r["waste_type"]))}</span></div>'
+            f'<div class="mm-ft-v"><b>{r["factor"]:.3f}</b><span class="mm-rk-track"><i class="{"mm-px" if r["proxy"] else ""}" '
+            f'style="width:max(3px, {100 * r["factor"] / top:.2f}%)"></i></span></div>'
+            f'<div class="mm-ft-b"><span class="mm-basis{" mm-basis-px" if r["proxy"] else ""}">'
+            f'{"Proxy estimate" if r["proxy"] else "Sourced"}</span></div>'
+            f'<div class="mm-ft-s">{source}</div><p class="mm-ft-note">{esc(note)}</p></div>')
+    head = ('<div class="mm-ft-r mm-ft-h"><span>Material</span><span>kg CO₂e saved per kg</span><span>Basis</span>'
+            '<span>Source</span></div>')
+    return f'<div class="mm-ft">{head}{"".join(out)}</div>'

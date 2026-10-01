@@ -71,6 +71,12 @@ h1 { line-height: 1.05 !important; }
   height: 100% !important;
 }
 .st-key-card_upload, .st-key-card_ident { height: 100%; }
+/* impact: the zone board and the CO2e ranking side by side share one height */
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-card_zone_board) { align-items: stretch; }
+[data-testid="stColumn"]:has(.st-key-card_zone_board) > [data-testid="stVerticalBlock"],
+[data-testid="stColumn"]:has(.st-key-card_co2_rank) > [data-testid="stVerticalBlock"],
+[data-testid="stLayoutWrapper"]:has(> .st-key-card_zone_board), [data-testid="stLayoutWrapper"]:has(> .st-key-card_co2_rank),
+.st-key-card_zone_board, .st-key-card_co2_rank { height: 100% !important; }
 [data-testid="stFileUploaderDropzone"] {
   padding: 1.1rem; border: 1px dashed var(--mm-line-strong); background: var(--mm-ground);
   transition: border-color 0.15s ease, background-color 0.15s ease;
@@ -305,17 +311,87 @@ button:focus-visible, a:focus-visible, [data-testid="stTopNavLink"]:focus-visibl
 .mm-tip:has(.mm-score) { flex-direction: column; align-items: flex-end; gap: 0; }
 .mm-dlg-name { font-size: 1.2rem; font-weight: 650; line-height: 1.3; font-stretch: 108%; }
 
-/* ---------- classification history ---------- */
-.mm-hist { display: grid; gap: 1px; background: var(--mm-line); border: 1px solid var(--mm-line); border-radius: 3px; overflow: hidden; }
-.mm-hist > div { display: grid; grid-template-columns: 4.5rem minmax(0, 1.4fr) minmax(6rem, 1fr) 6.5rem; gap: 0.75rem;
-  align-items: center; padding: 0.55rem 0.8rem; background: var(--mm-panel); font-size: 0.86rem; }
-.mm-hist time { color: var(--mm-faint); font-size: 0.78rem; }
-.mm-bar { height: 4px; background: var(--mm-line-strong); border-radius: 2px; overflow: hidden; }
-.mm-bar i { display: block; height: 100%; background: var(--c, var(--mm-text)); }
-.mm-hist .mm-st { font-size: 0.78rem; color: var(--mm-muted); text-align: right; }
-.mm-hist .mm-st-detected { color: var(--mm-lime); }
-.mm-hist .mm-st-confirm { color: var(--mm-amber); }
-@media (max-width: 640px) { .mm-hist > div { grid-template-columns: 1fr auto; } .mm-hist time, .mm-hist .mm-bar { display: none; } }
+/* ---------- impact: instrument-style bars (zone board, CO2e ranking, factor table) ---------- */
+@keyframes mm-grow { from { transform: scaleX(0); } }
+.mm-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0.2rem 0 0.6rem; font-size: 0.78rem; color: var(--mm-muted); }
+.mm-legend span { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+.mm-legend i { width: 0.65rem; height: 0.65rem; border-radius: 2px; background: var(--c); }
+.mm-legend .mm-key i { width: 1.2rem; height: 0.55rem; }
+.mm-rank-list + .mm-legend { margin: 1rem 0 0; padding-top: 0.75rem; border-top: 1px solid var(--mm-line); }
+/* proxy-based figures are hatched, sourced ones solid */
+.mm-px { background: repeating-linear-gradient(135deg, var(--c) 0 2px, transparent 2px 5px) !important;
+  box-shadow: inset 0 0 0 1px var(--c); }
+
+/* bar tooltips */
+.mm-zr-bar i[data-tip]::after, .mm-rk-track i[data-tip]::after {
+  content: attr(data-tip); position: absolute; left: 0; bottom: calc(100% + 8px); width: max-content; max-width: 240px;
+  padding: 0.4rem 0.6rem; border-radius: 3px; background: var(--mm-bone); color: var(--mm-ink); font-size: 0.76rem;
+  font-weight: 450; line-height: 1.35; opacity: 0; pointer-events: none; z-index: 50; transition: opacity 0.12s ease;
+}
+.mm-zr-bar i:hover::after, .mm-zr-bar i:focus-visible::after,
+.mm-rk-track i:hover::after, .mm-rk-track i:focus-visible::after { opacity: 1; }
+
+.mm-board { display: grid; }
+.mm-zr { display: grid; grid-template-columns: 1.3rem minmax(0, 1fr) 4rem 4.6rem 6.4rem; column-gap: 0.75rem; row-gap: 0.6rem;
+  align-items: baseline; padding: 1.3rem 0 1.4rem; border-top: 1px solid var(--mm-line); font-size: 0.9rem; }
+.mm-zr-h { padding: 0.35rem 0 0.5rem; border-top: none; font-size: 0.75rem; color: var(--mm-faint); }
+.mm-zr-i { font-size: 0.75rem; color: var(--mm-faint); }
+.mm-zr-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.mm-zr-n, .mm-zr-kg, .mm-zr-co2 { text-align: right; white-space: nowrap; }
+.mm-zr-n { color: var(--mm-muted); }
+.mm-zr:not(.mm-zr-h) .mm-zr-kg { font-weight: 600; }
+.mm-zr:not(.mm-zr-h) .mm-zr-co2 { color: var(--mm-lime); }
+.mm-zr-bar { grid-column: 2 / -1; display: flex; gap: 2px; height: 1rem; min-width: 3px;
+  transform-origin: left; animation: mm-grow 0.8s var(--d, 0ms) cubic-bezier(.2, .7, .2, 1) both; }
+.mm-zr-bar i { position: relative; min-width: 2px; background: var(--c); border-radius: 1px; cursor: help; outline: none;
+  transition: opacity 0.15s ease; }
+.mm-zr-bar i:last-child { border-radius: 1px 4px 4px 1px; }
+.mm-zr-bar:hover i { opacity: 0.4; }
+.mm-zr-bar i:hover, .mm-zr-bar i:focus-visible { opacity: 1; }
+
+.mm-rank-list { display: grid; gap: 0.15rem; }
+.mm-rk { display: grid; grid-template-columns: minmax(7rem, 9.5rem) minmax(0, 1fr) 4.4rem; gap: 0.75rem; align-items: center;
+  min-height: 1.4rem; font-size: 0.84rem; transition: opacity 0.15s ease; }
+.mm-rank-list:hover .mm-rk { opacity: 0.5; }
+.mm-rank-list .mm-rk:hover { opacity: 1; }
+.mm-rk-l { display: flex; align-items: center; gap: 0.45rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mm-rk-l i { flex: none; width: 0.55rem; height: 0.55rem; border-radius: 2px; background: var(--c); }
+.mm-rk b { text-align: right; font-weight: 600; white-space: nowrap; }
+/* track with quarter ticks as the scale reference */
+.mm-rk-track { position: relative; display: block; height: 0.6rem;
+  background-image: linear-gradient(90deg, var(--mm-line) 1px, transparent 1px); background-size: 25% 100%; }
+.mm-rk-track i { position: relative; display: block; height: 100%; background: var(--c); border-radius: 1px 4px 4px 1px;
+  cursor: help; outline: none; transform-origin: left; animation: mm-grow 0.7s var(--d, 0ms) cubic-bezier(.2, .7, .2, 1) both; }
+
+.mm-ft { display: grid; }
+.mm-ft-r { display: grid; grid-template-columns: minmax(9rem, 1.1fr) minmax(10rem, 1.3fr) 7.5rem minmax(6rem, 0.8fr);
+  column-gap: 1.25rem; row-gap: 0.3rem; align-items: center; padding: 0.8rem 0 0.85rem; border-top: 1px solid var(--mm-line); }
+.mm-ft-h { padding: 0.2rem 0 0.45rem; border-top: none; font-size: 0.75rem; color: var(--mm-faint); }
+.mm-ft-m { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.mm-ft-m b { font-weight: 600; font-size: 0.92rem; }
+.mm-ft-m span { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--mm-muted); }
+.mm-ft-m span i { width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--c); }
+.mm-ft-v { display: grid; grid-template-columns: 3.3rem minmax(0, 1fr); gap: 0.65rem; align-items: center; }
+.mm-ft-v b { font-weight: 600; text-align: right; }
+.mm-basis { display: inline-block; padding: 0.05rem 0.45rem; border-radius: 2px; border: 1px solid var(--mm-line-strong);
+  font-size: 0.75rem; white-space: nowrap; }
+.mm-basis-px { border-color: var(--mm-amber); color: var(--mm-amber); }
+.mm-ft-s a { color: var(--mm-text); font-size: 0.85rem; text-decoration: underline; text-decoration-color: var(--mm-line-strong);
+  text-underline-offset: 3px; }
+.mm-ft-s a:hover { text-decoration-color: var(--mm-lime); }
+.mm-ft-none { font-size: 0.8rem; color: var(--mm-faint); }
+.mm-ft-note { grid-column: 1 / -1; margin: 0 !important; max-width: 110ch; font-size: 0.78rem !important; line-height: 1.45;
+  color: var(--mm-faint); }
+
+@media (max-width: 640px) {
+  .mm-zr { grid-template-columns: 1.1rem minmax(0, 1fr) auto auto; }
+  .mm-zr-n { display: none; }
+  .mm-rk { grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) 3.9rem; gap: 0.5rem; }
+  .mm-ft-h { display: none; }
+  .mm-ft-r { grid-template-columns: minmax(0, 1fr) auto; }
+  .mm-ft-m { grid-area: 1 / 1; } .mm-ft-b { grid-area: 1 / 2; }
+  .mm-ft-v { grid-area: 2 / 1 / 3 / 3; } .mm-ft-s { grid-area: 3 / 1 / 4 / 3; } .mm-ft-note { grid-area: 4 / 1 / 5 / 3; }
+}
 
 /* ---------- presentation mode ---------- */
 .mm-present-h { margin: 0 0 1rem; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 650; font-stretch: 116%; line-height: 1.05;
