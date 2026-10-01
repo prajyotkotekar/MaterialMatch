@@ -77,7 +77,7 @@ with class_tab:
             else:
                 st.html('<div class="mm-empty mm-gridbg"><b>No predictions yet</b><p>Classify a photo on '
                         "I have waste or Present, and it shows up here.</p></div>")
-                st.page_link("pages/1_List_Waste.py", label="Classify a photo", icon=":material/arrow_forward:")
+                st.page_link(st.session_state.nav["waste"], label="Classify a photo", icon=":material/arrow_forward:")
     with right:
         with st.container(border=True, key="card_answered"):
             section_title("Answered photos by predicted material")

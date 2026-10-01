@@ -1,7 +1,7 @@
 [client]
 toolbarMode = "minimal"
 
-# One identity: soft graphite with an off-white result card, so there is no separate light variant.
+# One identity: true black with an off-white result card, so there is no separate light variant.
 [theme]
 base = "dark"
 font = "Archivo:https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap"
@@ -16,19 +16,19 @@ buttonRadius = "3px"
 showWidgetBorder = true
 linkUnderline = true
 primaryColor = "#C6F25A"
-backgroundColor = "#272C29"
-secondaryBackgroundColor = "#353C37"
-textColor = "#EEF0EA"
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#151715"
+textColor = "#F2F3EE"
 linkColor = "#C6F25A"
-borderColor = "#4A534C"
-dataframeBorderColor = "#434B45"
-dataframeHeaderBackgroundColor = "#2F3531"
-codeBackgroundColor = "#2F3531"
+borderColor = "#2C302C"
+dataframeBorderColor = "#232723"
+dataframeHeaderBackgroundColor = "#0C0D0C"
+codeBackgroundColor = "#0C0D0C"
 greenColor = "#C6F25A"
 blueColor = "#8BA8D4"
 orangeColor = "#F0A43A"
 violetColor = "#C29AD4"
 redColor = "#E8776E"
 yellowColor = "#D6BC78"
-grayColor = "#AEB6AC"
+grayColor = "#A4ABA2"
 chartCategoricalColors = ["#B48F6E", "#8BA8D4", "#E3965F", "#C29AD4", "#D6BC78", "#79C3BA", "#A9B1B6", "#A9BE6E", "#D88580"]

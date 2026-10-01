@@ -262,7 +262,7 @@ def loop_html(waste_type: str | None, sub_type: str | None = None) -> str:
     first = sub_label(sub_type) if sub_type else waste_label(wt)
     texts = [f"Your {first.lower()}"] + steps
     # segment i runs from stage i to stage i+1; from `broken` on there is no recovery route
-    ring = _segments([color if i < broken else "#58625B" for i in range(5)], 14)
+    ring = _segments([color if i < broken else "#363B36" for i in range(5)], 14)
     nodes = "".join(
         f'<span class="mm-loop-node{" off" if i > broken else ""}" style="left:{x:.1f}%;top:{y:.1f}%">{i + 1}</span>'
         for i in range(5) for x, y in [_polar(i * 72, 48.5)])

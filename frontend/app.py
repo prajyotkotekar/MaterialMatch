@@ -52,17 +52,19 @@ for _k in list(st.session_state.keys()):
             or _k.startswith(("wt_", "sub_", "qty_"))):
         st.session_state[_k] = st.session_state[_k]
 
-PAGES = HERE / "pages"
-page = st.navigation(
-    [
-        st.Page(PAGES / "1_List_Waste.py", title="I have waste", url_path="waste", default=True),
-        st.Page(PAGES / "2_Find_Matches.py", title="I need feedstock", url_path="feedstock"),
-        # the carbon factors are a tab on the Impact page
-        st.Page(PAGES / "3_Impact_Dashboard.py", title="Impact", url_path="impact"),
-        st.Page(PAGES / "4_Present.py", title="Present", url_path="present"),
-    ],
-    position="top",
-)
+# Not called "pages": a folder with that name next to the entry script switches Streamlit to its legacy
+# multipage mode, which shows "Page not found" when a page URL is opened directly.
+PAGES = HERE / "app_pages"
+# Pages link to each other through these objects (st.session_state.nav): a "pages/..." path would be relative
+# to the entrypoint, which differs between `streamlit run frontend/app.py` and `streamlit run dashboard.py`.
+st.session_state.nav = {
+    "waste": st.Page(PAGES / "1_List_Waste.py", title="I have waste", url_path="waste", default=True),
+    "feedstock": st.Page(PAGES / "2_Find_Matches.py", title="I need feedstock", url_path="feedstock"),
+    # the carbon factors are a tab on the Impact page
+    "impact": st.Page(PAGES / "3_Impact_Dashboard.py", title="Impact", url_path="impact"),
+    "present": st.Page(PAGES / "4_Present.py", title="Present", url_path="present"),
+}
+page = st.navigation(list(st.session_state.nav.values()), position="top")
 
 page.run()
 
