@@ -13,7 +13,8 @@ Manufacturers can search listed waste in plain words.
   recycler matching, CO₂e estimate, publish a listing.
 - **I need feedstock**: semantic search over listings, ranked by relevance, distance and quality, with
   cost and CO₂e for the quantity needed.
-- **Impact**: totals and charts across listings, the photos classified so far, and the carbon factor table with sources.
+- **Impact**: potential CO₂e of the listings by zone and by sub-type (proxy-based estimates hatched), the
+  biggest lever in the current selection, and the carbon factor table with sources.
 - **Present**: a full-width live classification view for demos (large result, recovery loop, session history).
 - **Feedback loop**: users confirm or correct predictions; confirmed photos adjust similar future
   predictions right away and can be used for a gated retrain.
