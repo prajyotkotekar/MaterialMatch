@@ -4,6 +4,7 @@ frontend/app.py - MaterialMatch Streamlit entry point.
     streamlit run frontend/app.py         # from the project root (dashboard.py also launches this)
 """
 
+import html
 import sys
 from pathlib import Path
 
@@ -15,12 +16,12 @@ for p in (str(ROOT), str(HERE)):
 
 import streamlit as st  # noqa: E402
 
-from common import inject_css  # noqa: E402
+from common import inject_css, theme  # noqa: E402
 from ml.carbon import DISCLAIMER  # noqa: E402
 
 st.set_page_config(page_title="MaterialMatch", page_icon=str(HERE / "assets" / "mark.svg"), layout="wide")
 inject_css()
-st.logo(str(HERE / "assets" / "logo.svg"), size="large")
+st.logo(str(HERE / "assets" / f"logo_{theme()}.svg"), size="large")
 
 if "my_listings" not in st.session_state:
     st.session_state.my_listings = []
@@ -35,17 +36,14 @@ for _k in list(st.session_state.keys()):
 PAGES = HERE / "pages"
 page = st.navigation(
     [
-        st.Page(PAGES / "1_List_Waste.py", title="I have waste", icon=":material/recycling:",
-                url_path="waste", default=True),
-        st.Page(PAGES / "2_Find_Matches.py", title="I need feedstock", icon=":material/factory:",
-                url_path="feedstock"),
-        # the carbon factors are a tab on the Impact page (merged 2026-09-30)
-        st.Page(PAGES / "3_Impact_Dashboard.py", title="Impact", icon=":material/eco:", url_path="impact"),
+        st.Page(PAGES / "1_List_Waste.py", title="I have waste", url_path="waste", default=True),
+        st.Page(PAGES / "2_Find_Matches.py", title="I need feedstock", url_path="feedstock"),
+        # the carbon factors are a tab on the Impact page
+        st.Page(PAGES / "3_Impact_Dashboard.py", title="Impact", url_path="impact"),
     ],
     position="top",
 )
 
 page.run()
 
-st.space("medium")
-st.caption(DISCLAIMER)
+st.markdown(f'<p class="mm-foot">{html.escape(DISCLAIMER)}</p>', unsafe_allow_html=True)

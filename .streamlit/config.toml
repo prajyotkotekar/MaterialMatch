@@ -2,50 +2,52 @@
 toolbarMode = "minimal"
 
 [theme]
-font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-baseFontSize = 14
+font = "Archivo:https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap"
+headingFont = "Archivo:https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap"
+codeFont = "'IBM Plex Mono':https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+baseFontSize = 15
 baseFontWeight = 400
-headingFontSizes = ["28px", "20px", "16px", "15px", "14px", "12px"]
+headingFontSizes = ["34px", "22px", "18px", "15px", "14px", "12px"]
 headingFontWeights = [700, 650, 600, 600, 600, 600]
-baseRadius = "10px"
-buttonRadius = "10px"
+baseRadius = "4px"
+buttonRadius = "4px"
 showWidgetBorder = true
-linkUnderline = false
-
-[theme.dark]
-primaryColor = "#2BB98A"
-backgroundColor = "#0A1014"
-secondaryBackgroundColor = "#131C22"
-textColor = "#E3EBED"
-linkColor = "#34D399"
-borderColor = "#24323A"
-dataframeBorderColor = "#24323A"
-dataframeHeaderBackgroundColor = "#111A1F"
-codeBackgroundColor = "#111A1F"
-greenColor = "#34D399"
-blueColor = "#38BDF8"
-orangeColor = "#FBBF24"
-violetColor = "#A78BFA"
-redColor = "#F87171"
-grayColor = "#8B9BA4"
-chartCategoricalColors = ["#34D399", "#38BDF8", "#FBBF24", "#A78BFA", "#F472B6", "#94A3B8"]
+linkUnderline = true
 
 [theme.light]
-primaryColor = "#0B7F62"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F1F5F4"
-textColor = "#0F1B20"
-linkColor = "#0B7F62"
-borderColor = "#D9E2E0"
-dataframeBorderColor = "#D9E2E0"
-dataframeHeaderBackgroundColor = "#F1F5F4"
-codeBackgroundColor = "#F1F5F4"
-greenColor = "#0B7F62"
-blueColor = "#0369A1"
-orangeColor = "#B45309"
-violetColor = "#6D28D9"
-redColor = "#B91C1C"
-grayColor = "#5B6B73"
-chartCategoricalColors = ["#0B7F62", "#0369A1", "#D97706", "#7C3AED", "#DB2777", "#64748B"]
+primaryColor = "#1C2529"
+backgroundColor = "#F1F2EE"
+secondaryBackgroundColor = "#E4E7E2"
+textColor = "#1C2529"
+linkColor = "#1F4FB8"
+borderColor = "#CDD3CE"
+dataframeBorderColor = "#D7DCD7"
+dataframeHeaderBackgroundColor = "#E9ECE7"
+codeBackgroundColor = "#E9ECE7"
+greenColor = "#1E7A4C"
+blueColor = "#1F4FB8"
+orangeColor = "#A65A00"
+violetColor = "#7A3FB5"
+redColor = "#B42335"
+yellowColor = "#8A6A00"
+grayColor = "#5C676C"
+chartCategoricalColors = ["#8B6B4E", "#2F6FD6", "#E2622B", "#8E52C9", "#C08A2B", "#12A1A8", "#6B7A88", "#3E9B3A", "#C9384A"]
+
+[theme.dark]
+primaryColor = "#F2C200"
+backgroundColor = "#161C1F"
+secondaryBackgroundColor = "#222B2F"
+textColor = "#E6E9E4"
+linkColor = "#8DB1FF"
+borderColor = "#34424A"
+dataframeBorderColor = "#2C383E"
+dataframeHeaderBackgroundColor = "#1D2528"
+codeBackgroundColor = "#1D2528"
+greenColor = "#5CC98E"
+blueColor = "#8DB1FF"
+orangeColor = "#F2A65A"
+violetColor = "#C4A0F0"
+redColor = "#F28B95"
+yellowColor = "#F2C200"
+grayColor = "#9AA6AB"
+chartCategoricalColors = ["#B08B6B", "#5C93F0", "#F07C47", "#AD7FE0", "#D9A84A", "#2CC0C6", "#94A3B0", "#62B95C", "#E2596A"]

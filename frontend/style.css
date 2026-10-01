@@ -1,147 +1,206 @@
-/* MaterialMatch - small, scoped overrides. Colours/fonts/radius live in .streamlit/config.toml.
-   Cards are st.container(key="card_*"), so selectors use Streamlit's public st-key-* classes. */
+/* MaterialMatch styles. Theme colours and fonts live in .streamlit/config.toml; the --mm-* tokens are
+   set per light/dark theme by common.inject_css(). Cards are st.container(key="card_*"), so selectors
+   use Streamlit's public st-key-* classes. Colour rule: material colours mark materials only, yellow
+   marks the main action. */
 
-:root {
-  --mm-accent: #10B981;
-  --mm-accent-rgb: 16, 185, 129;
-  --mm-surface: rgba(127, 127, 127, 0.045);
-  --mm-line: rgba(127, 127, 127, 0.22);
-}
-
-/* Layout: centred max-width, tighter top padding */
+/* ---------- page frame ---------- */
+[data-testid="stAppViewContainer"], [data-testid="stHeader"] { background: var(--mm-ground); }
+[data-testid="stHeader"] { border-bottom: 1px solid var(--mm-rule); }
 [data-testid="stMainBlockContainer"] {
-  max-width: 1200px;
-  padding: 4.25rem 1.5rem 2.5rem;
+  max-width: 1180px;
+  padding: 5rem 2rem 3rem;
 }
 @media (max-width: 640px) {
-  [data-testid="stMainBlockContainer"] { padding: 4rem 0.75rem 2rem; }
+  [data-testid="stMainBlockContainer"] { padding: 4.5rem 1rem 2rem; }
 }
+body, [data-testid="stApp"] { font-feature-settings: "tnum" 1, "lnum" 1; }
 
-/* Top navigation as a segmented pill control */
+/* ---------- type ---------- */
+h1, h2, h3 { font-stretch: 112%; letter-spacing: -0.012em; }
+h1 { line-height: 1.08 !important; }
+[data-testid="stCaptionContainer"] { color: var(--mm-muted); }
+.mm-lede { max-width: 64ch; margin: 0.1rem 0 1.4rem; color: var(--mm-muted); font-size: 1.02rem; line-height: 1.5; }
+
+/* ---------- navigation: underlined tabs ---------- */
 [data-testid="stTopNavLink"] {
-  border-radius: 999px;
-  padding: 0.3rem 0.85rem;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 0;
+  padding: 0.55rem 0.2rem;
+  margin: 0 0.7rem;
+  box-shadow: inset 0 -2px 0 transparent;
+  font-weight: 500;
 }
-[data-testid="stTopNavLink"]:hover { background: rgba(127, 127, 127, 0.12); }
+[data-testid="stTopNavLink"]:hover { background: transparent; box-shadow: inset 0 -2px 0 var(--mm-rule); }
 [data-testid="stTopNavLink"][aria-current="page"] {
-  background: rgba(var(--mm-accent-rgb), 0.14);
-  box-shadow: inset 0 0 0 1px rgba(var(--mm-accent-rgb), 0.38);
+  background: transparent;
+  box-shadow: inset 0 -2px 0 var(--mm-mark);
+  font-weight: 650;
 }
 
-/* Cards */
+/* ---------- panels ---------- */
 [class*="st-key-card_"] {
-  background: var(--mm-surface);
-  border-color: var(--mm-line) !important;
-  backdrop-filter: blur(6px);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  background: var(--mm-sheet);
+  border-color: var(--mm-rule) !important;
 }
-[class*="st-key-card_rec"]:hover,
-[class*="st-key-card_lst"]:hover { border-color: rgba(var(--mm-accent-rgb), 0.45) !important; }
 
-/* KPI rows: equal-height cards */
-[class*="st-key-kpis_"] { align-items: stretch; }
+/* Step headings on "I have waste": the page is a real sequence (photo, details, recyclers) */
+.mm-step { display: flex; align-items: center; gap: 0.6rem; min-height: 1.6rem; margin-bottom: 0.15rem;
+  font-stretch: 108%; font-weight: 650; font-size: 1.05rem; line-height: 1.3; }
+.mm-step-n {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 1.45rem; height: 1.45rem;
+  border: 1.5px solid var(--mm-ink); border-radius: 2px;
+  font-size: 0.8rem; font-weight: 700; font-stretch: 100%;
+}
+.mm-step-note { font-weight: 400; font-size: 0.85rem; color: var(--mm-muted); font-stretch: 100%; }
+/* Streamlit pulls markdown blocks up by -1rem when they end in anything but a paragraph.
+   Never write HTML tags in this file: the sanitiser then drops the whole stylesheet. */
+[data-testid="stMarkdownContainer"]:has(> .mm-step), [data-testid="stMarkdownContainer"]:has(> .mm-section),
+[data-testid="stMarkdownContainer"]:has(> .mm-foot) { margin-bottom: 0 !important; }
+.mm-section { font-stretch: 108%; font-weight: 650; font-size: 1rem; line-height: 1.4; }
+
+/* ---------- ticket strip: KPI rows read as one ruled weighbridge ticket ---------- */
+[class*="st-key-kpis_"] {
+  gap: 1px !important;
+  background: var(--mm-rule);
+  border: 1px solid var(--mm-rule);
+  border-radius: 4px;
+  overflow: hidden;
+  align-items: stretch;
+}
 [class*="st-key-kpis_"] > [data-testid="stLayoutWrapper"] {
   align-self: stretch;
   height: auto !important;
-  min-width: 165px;
+  min-width: 170px;
+  background: var(--mm-sheet);
 }
-[class*="st-key-kpis_"] [class*="st-key-card_"] { height: 100%; }
-/* the cost-by-quality card lists three rows, so it gets more room than the single-number cards */
-[class*="st-key-kpis_"] > [data-testid="stLayoutWrapper"]:has(.st-key-card_cost) { flex-grow: 1.6; min-width: 300px; }
+[class*="st-key-kpis_"] [class*="st-key-card_"] {
+  height: 100%;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0.95rem 1.1rem 1rem;
+}
+[class*="st-key-kpis_"] > [data-testid="stLayoutWrapper"]:has(.st-key-card_cost) { flex-grow: 1.6; min-width: 290px; }
+[data-testid="stMetricLabel"] p { font-size: 0.82rem; color: var(--mm-muted); font-weight: 500; }
+[data-testid="stMetricValue"] { font-weight: 650; font-stretch: 94%; letter-spacing: -0.015em; }
+[class*="st-key-kpis_"] .st-key-card_co2 [data-testid="stMetricValue"] { color: var(--mm-carbon); }
 
-/* Upload + details cards share a row height */
+/* ---------- upload + details share a row height ---------- */
 [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-card_upload) { align-items: stretch; }
 [data-testid="stColumn"]:has(.st-key-card_upload) > [data-testid="stVerticalBlock"],
 [data-testid="stColumn"]:has(.st-key-card_upload) [data-testid="stLayoutWrapper"]:has(> .st-key-card_upload) {
   height: 100% !important;
 }
 .st-key-card_upload { height: 100%; }
-
-/* Highlighted best match */
-[class*="st-key-card_top"] {
-  background: linear-gradient(180deg, rgba(var(--mm-accent-rgb), 0.13), rgba(var(--mm-accent-rgb), 0.03));
-  border-color: rgba(var(--mm-accent-rgb), 0.55) !important;
-}
-
-/* CO2e headline number */
-.st-key-card_co2 [data-testid="stMetricValue"] { color: #12A37F; }
-[data-testid="stMetricValue"] { font-weight: 700; letter-spacing: -0.02em; }
-
-/* Compact upload drop zone */
 .st-key-card_upload [data-testid="stFileUploaderDropzone"] {
-  padding: 0.85rem 1rem;
-  border: 1px dashed rgba(var(--mm-accent-rgb), 0.5);
-  background: rgba(var(--mm-accent-rgb), 0.05);
-  transition: background-color 0.15s ease;
+  padding: 1rem;
+  border: 1.5px dashed var(--mm-rule-strong);
+  background: var(--mm-ground);
 }
-.st-key-card_upload [data-testid="stFileUploaderDropzone"]:hover {
-  background: rgba(var(--mm-accent-rgb), 0.1);
-}
+.st-key-card_upload [data-testid="stFileUploaderDropzone"]:hover { border-color: var(--mm-ink); }
+.st-key-card_upload [data-testid="stImage"] img { border-radius: 2px; object-fit: cover; }
 
-/* Buttons: fixed deep green so white label text keeps >= 4.5:1 contrast in both themes
-   (dark theme's primaryColor is brighter for pills, focus rings and progress bars). */
+/* ---------- result cards: a material-coloured edge, like a bale tag ---------- */
+[class*="st-key-card_rec"], [class*="st-key-card_top"], [class*="st-key-card_lst"] {
+  border-left: 4px solid var(--mm-edge, var(--mm-rule-strong)) !important;
+}
+[class*="st-key-card_rec"]:hover, [class*="st-key-card_top"]:hover, [class*="st-key-card_lst"]:hover {
+  border-color: var(--mm-rule-strong) !important;
+  border-left-color: var(--mm-edge, var(--mm-rule-strong)) !important;
+}
+[class*="st-key-card_"] [data-testid="stProgress"] > div > div { height: 4px; }
+
+/* ---------- buttons ---------- */
 [data-testid^="stBaseButton-primary"],
 [data-testid^="stBaseLinkButton-primary"] {
-  background-color: #0B7F62 !important;
-  border-color: #0B7F62 !important;
-  color: #FFFFFF !important;
+  background-color: #F2C200 !important;
+  border: 1px solid #D4A900 !important;
+  color: #1C2529 !important;
+  font-weight: 650;
 }
-[data-testid="stBaseButton-primary"] {
-  font-weight: 600;
-  box-shadow: 0 6px 18px -6px rgba(var(--mm-accent-rgb), 0.55);
-  transition: filter 0.12s ease, transform 0.12s ease;
-}
-[data-testid="stBaseButton-primary"]:hover { filter: brightness(1.12); }
-[data-testid="stBaseButton-primary"]:active { transform: translateY(1px); }
-button:focus-visible,
-a:focus-visible,
-[data-testid="stTopNavLink"]:focus-visible {
-  outline: 2px solid var(--mm-accent) !important;
+[data-testid^="stBaseButton-primary"] p, [data-testid^="stBaseLinkButton-primary"] p,
+[data-testid^="stBaseButton-primary"] span, [data-testid^="stBaseLinkButton-primary"] span { color: #1C2529 !important; }
+[data-testid^="stBaseButton-primary"]:hover,
+[data-testid^="stBaseLinkButton-primary"]:hover { background-color: #E3B600 !important; }
+[data-testid^="stBaseButton-primary"]:active { transform: translateY(1px); }
+button:focus-visible, a:focus-visible, [data-testid="stTopNavLink"]:focus-visible {
+  outline: 2px solid var(--mm-mark) !important;
   outline-offset: 2px;
 }
 
-/* Tighter label spacing in form grids */
 [data-testid="stWidgetLabel"] { margin-bottom: 0.1rem; }
 
-/* Hover / focus tooltips (tip() in common.py). Keyboard-focusable, so they also work on tap. */
+/* ---------- material tag (swatch + name) ---------- */
+.mm-tag {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.05rem 0.45rem 0.05rem 0.4rem; margin: 0 0.3rem 0.15rem 0;
+  border: 1px solid var(--mm-rule); border-radius: 2px;
+  font-size: 0.8rem; line-height: 1.45; font-weight: 500; white-space: nowrap;
+}
+.mm-tag i { width: 0.6rem; height: 0.6rem; background: var(--c); border-radius: 1px; flex: none; }
+.mm-src { display: inline-block; padding: 0.05rem 0.45rem; border-radius: 2px; font-size: 0.8rem; line-height: 1.45;
+  border: 1px dashed var(--mm-rule-strong); color: var(--mm-muted); white-space: nowrap; }
+.mm-src-mine { border: 1px solid var(--mm-link); color: var(--mm-link); font-weight: 600; }
+.mm-flag {
+  display: inline-block; padding: 0.05rem 0.45rem; margin-right: 0.45rem; border-radius: 2px;
+  background: #F2C200; color: #1C2529; font-size: 0.78rem; font-weight: 650; line-height: 1.45;
+}
+.mm-rank { display: inline-block; min-width: 1.6rem; margin-right: 0.35rem; color: var(--mm-muted); font-weight: 600; }
+
+/* quality grade: three ticks, filled by grade */
+.mm-q { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; white-space: nowrap; margin-right: 0.35rem; }
+.mm-q b { display: inline-flex; gap: 2px; }
+.mm-q b i { width: 0.35rem; height: 0.75rem; border-radius: 1px; background: var(--mm-rule); }
+.mm-q-good b i, .mm-q-fair b i:nth-child(-n+2), .mm-q-poor b i:first-child { background: var(--mm-ink); }
+
+/* inline meta row: items separated by space, not by dots */
+.mm-meta { display: flex; flex-wrap: wrap; align-items: center; column-gap: 1.1rem; row-gap: 0.2rem;
+  font-size: 0.87rem; color: var(--mm-muted); }
+.mm-meta > span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.mm-meta .mm-carbon { color: var(--mm-carbon); }
+.mm-pin { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--c);
+  box-shadow: 0 0 0 1.5px var(--mm-ink); }
+.mm-area { font-size: 0.85rem; color: var(--mm-muted); margin-left: 0.2rem; }
+
+/* ---------- tooltips (tip() in common.py); keyboard-focusable, so they also work on tap ---------- */
 .mm-tip { position: relative; display: inline-flex; align-items: center; gap: 0.25rem; cursor: help; outline: none; }
-.mm-tip:focus-visible { outline: 2px solid var(--mm-accent); outline-offset: 2px; border-radius: 4px; }
+.mm-tip:focus-visible { outline: 2px solid var(--mm-mark); outline-offset: 2px; border-radius: 2px; }
 .mm-tip::after {
   content: attr(data-tip);
-  position: absolute; left: 0; bottom: calc(100% + 8px); transform: translateY(4px);
+  position: absolute; left: 0; bottom: calc(100% + 8px);
   width: max-content; max-width: 260px; white-space: normal; text-align: left;
-  padding: 0.45rem 0.6rem; border-radius: 8px;
-  background: #1C262B; color: #E3EBED; border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
-  font-size: 0.75rem; font-weight: 400; line-height: 1.35; letter-spacing: normal;
+  padding: 0.5rem 0.65rem; border-radius: 3px;
+  background: var(--mm-ink); color: var(--mm-ground);
+  font-size: 0.78rem; font-weight: 400; line-height: 1.4; letter-spacing: normal; font-stretch: 100%;
   opacity: 0; pointer-events: none; z-index: 1000;
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  transition: opacity 0.12s ease;
 }
-.mm-tip-below::after { bottom: auto; top: calc(100% + 8px); left: auto; right: 0; transform: translate(0, -4px); }
-.mm-tip:hover::after, .mm-tip:focus::after { opacity: 1; transform: translateY(0); }
-.mm-tip-below:hover::after, .mm-tip-below:focus::after { transform: translate(0, 0); }
+.mm-tip-below::after { bottom: auto; top: calc(100% + 8px); left: auto; right: 0; }
+.mm-tip:hover::after, .mm-tip:focus::after { opacity: 1; }
 .mm-ico {
   font-family: "Material Symbols Rounded"; font-size: 1.1em; line-height: 1;
-  font-weight: normal; font-style: normal; -webkit-font-smoothing: antialiased; opacity: 0.8;
+  font-weight: normal; font-style: normal; -webkit-font-smoothing: antialiased;
 }
-.mm-dot { opacity: 0.5; margin: 0 0.45rem; }
 
-/* Recycler monogram (sample profiles: no real logos) */
+/* recycler monogram (sample profiles: no real logos) */
 .mm-logo {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 2.4rem; height: 2.4rem; border-radius: 10px;
-  background: color-mix(in srgb, var(--mm-logo) 18%, transparent);
-  border: 1px solid color-mix(in srgb, var(--mm-logo) 45%, transparent);
-  color: var(--mm-logo); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.02em;
+  width: 2.5rem; height: 2.5rem; border-radius: 3px;
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+  border: 1.5px solid var(--c);
+  font-weight: 700; font-size: 0.85rem; letter-spacing: 0.02em; font-stretch: 110%;
 }
 
-/* Match score block */
-.mm-score { display: block; font-size: 1.35rem; font-weight: 700; line-height: 1.1; text-align: right; }
-.mm-score-label { display: block; font-size: 0.75rem; opacity: 0.65; text-align: right; }
+/* match score */
+.mm-score { display: block; font-size: 1.5rem; font-weight: 650; line-height: 1.05; text-align: right; font-stretch: 94%; }
+.mm-score-label { display: block; font-size: 0.75rem; color: var(--mm-muted); text-align: right; }
 .mm-score, .mm-score-label { width: 100%; }
 .mm-tip:has(.mm-score) { flex-direction: column; align-items: flex-end; gap: 0; }
+.mm-dlg-name { font-size: 1.2rem; font-weight: 650; line-height: 1.3; font-stretch: 108%; }
 
-/* Upload thumbnails + per-photo prediction rows */
-.st-key-card_upload [data-testid="stImage"] img { border-radius: 8px; object-fit: cover; }
-.mm-dlg-name { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+/* ---------- footer ---------- */
+.mm-foot { margin-top: 2.5rem; padding-top: 0.9rem; border-top: 1px solid var(--mm-rule);
+  font-size: 0.8rem; color: var(--mm-muted); max-width: 90ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::after { transition: none !important; animation: none !important; }
+}

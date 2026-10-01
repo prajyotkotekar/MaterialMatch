@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="40" viewBox="0 0 210 40" role="img" aria-label="MaterialMatch">
+  <path d="M2 9h20l8 8v14H2z" fill="#F2C200"/>
+  <circle cx="23.5" cy="15" r="2.2" fill="#1C2529"/>
+  <path d="M7 27V17l4.5 5 4.5-5v10" fill="none" stroke="#1C2529" stroke-width="2.6" stroke-linecap="square"/>
+  <text x="40" y="26.5" font-family="Archivo, 'Arial Narrow', Arial, sans-serif" font-size="19" font-weight="700" fill="#E6E9E4" letter-spacing="0.2">Material<tspan font-weight="400">Match</tspan></text>
+</svg>

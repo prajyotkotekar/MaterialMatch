@@ -20,10 +20,20 @@ ROOT = HERE.parent
 WASTE_TYPES = ["textile", "plastic", "construction", "e_waste"]  # marketplace types (listings, recyclers, factors)
 ALL_WASTE_TYPES = list(taxonomy.WASTE_TYPES)  # + types the photo model recognises (paper, glass, ...)
 WASTE_LABELS = taxonomy.WASTE_LABELS
-WASTE_BADGE = {"construction": "green", "e_waste": "blue", "plastic": "orange", "textile": "violet",  # = chart order
-               "paper": "yellow", "glass": "blue", "metal": "gray", "biological": "green", "trash": "red"}
-WASTE_COLOR = {"construction": "#10B981", "e_waste": "#3B82F6", "plastic": "#F59E0B", "textile": "#8B5CF6",
-               "paper": "#CA8A04", "glass": "#0EA5E9", "metal": "#64748B", "biological": "#65A30D", "trash": "#DC2626"}
+# One colour per material, used for tags, card edges, chart bars and map pins (and nothing else).
+# Same order as chartCategoricalColors in .streamlit/config.toml.
+WASTE_COLOR = {
+    "light": {"construction": "#8B6B4E", "e_waste": "#2F6FD6", "plastic": "#E2622B", "textile": "#8E52C9",
+              "paper": "#C08A2B", "glass": "#12A1A8", "metal": "#6B7A88", "biological": "#3E9B3A", "trash": "#C9384A"},
+    "dark": {"construction": "#B08B6B", "e_waste": "#5C93F0", "plastic": "#F07C47", "textile": "#AD7FE0",
+             "paper": "#D9A84A", "glass": "#2CC0C6", "metal": "#94A3B0", "biological": "#62B95C", "trash": "#E2596A"},
+}
+TOKENS = {
+    "light": {"ground": "#F1F2EE", "sheet": "#FFFFFF", "ink": "#1C2529", "muted": "#5C676C", "rule": "#D7DCD7",
+              "rule-strong": "#AEB7B2", "mark": "#1C2529", "carbon": "#1E7A4C", "link": "#1F4FB8"},
+    "dark": {"ground": "#161C1F", "sheet": "#1D2528", "ink": "#E6E9E4", "muted": "#9AA6AB", "rule": "#2E3A40",
+             "rule-strong": "#4A5960", "mark": "#F2C200", "carbon": "#5CC98E", "link": "#8DB1FF"},
+}
 SESSION_ID_START = 10_000
 CO2E_EXPLAINER = "Estimated impact from diverting this material to reuse/recycling."
 RAW_DIR = ROOT / "data" / "raw"
@@ -36,8 +46,26 @@ waste_label = taxonomy.waste_label
 sub_label = taxonomy.sub_label
 
 
-def type_badge(t: str) -> str:
-    return f":{WASTE_BADGE.get(t, 'gray')}-badge[{waste_label(t)}]"
+def theme() -> str:
+    try:
+        return "dark" if st.context.theme.type == "dark" else "light"
+    except Exception:  # outside a browser session (tests)
+        return "light"
+
+
+def material_color(t: str | None) -> str:
+    return WASTE_COLOR[theme()].get(t or "", "#6B7A88")
+
+
+def type_tag(t: str) -> str:
+    """Material tag: colour swatch + name (HTML, render with unsafe_allow_html=True)."""
+    return f'<span class="mm-tag" style="--c:{material_color(t)}"><i></i>{html.escape(waste_label(t))}</span>'
+
+
+def quality_tag(q: str) -> str:
+    q = str(q).lower()
+    return (f'<span class="mm-q mm-q-{html.escape(q)}" title="{html.escape(q.capitalize())} quality">'
+            f'<b><i></i><i></i><i></i></b>{html.escape(q.capitalize())}</span>')
 
 
 def carbon_label(is_proxy: bool) -> str:
@@ -62,7 +90,23 @@ def icon(name: str) -> str:
 # ---------- styling ----------
 
 def inject_css() -> None:
-    st.html(f"<style>{(HERE / 'style.css').read_text(encoding='utf-8')}</style>")
+    mode = theme()
+    tokens = ";".join(f"--mm-{k}:{v}" for k, v in TOKENS[mode].items())
+    # result cards get their material colour as the left edge (card keys end in "__<waste_type>")
+    edges = "".join(f'[class*="st-key-card_"][class*="__{t}"]{{--mm-edge:{c}}}' for t, c in WASTE_COLOR[mode].items())
+    st.html(f"<style>:root{{{tokens}}}{edges}{(HERE / 'style.css').read_text(encoding='utf-8')}</style>")
+
+
+def page_header(title: str, lede: str) -> None:
+    st.markdown(f"# {title}")
+    st.markdown(f'<p class="mm-lede">{html.escape(lede)}</p>', unsafe_allow_html=True)
+
+
+def step_title(n: int, text: str, note: str = "") -> None:
+    """Numbered step heading (only for pages that are a real sequence)."""
+    extra = f'<span class="mm-step-note">{html.escape(note)}</span>' if note else ""
+    st.markdown(f'<div class="mm-step"><span class="mm-step-n">{n}</span><span>{html.escape(text)}</span>{extra}</div>',
+                unsafe_allow_html=True)
 
 
 # ---------- data ----------
@@ -146,8 +190,8 @@ def all_listings() -> pd.DataFrame:
 
 # ---------- components ----------
 
-def section_title(text: str, icon_name: str) -> None:
-    st.markdown(f"**:material/{icon_name}: {text}**")
+def section_title(text: str) -> None:
+    st.markdown(f'<div class="mm-section">{html.escape(text)}</div>', unsafe_allow_html=True)
 
 
 def kpi(key: str, label: str, value: str, note: str | None = None, help: str | None = None) -> None:
@@ -157,21 +201,16 @@ def kpi(key: str, label: str, value: str, note: str | None = None, help: str | N
             st.caption(note)
 
 
-QUALITY_BADGE = {"good": ":green-badge[:material/check_circle: Good]",
-                 "fair": ":orange-badge[:material/remove_circle: Fair]",
-                 "poor": ":red-badge[:material/error: Poor]"}
-
-
 def cost_by_quality_kpi(top_by_quality: dict, need_kg: float, help: str | None = None) -> None:
     """KPI card: what `need_kg` would cost per quality grade, from the best-ranked listing of each.
     top_by_quality maps 'good'/'fair'/'poor' to a listing dict (or None when there is none)."""
     with st.container(border=True, key="card_cost", gap="xsmall", height="stretch"):
         st.markdown(":small[Cost for your quantity]", help=help)
-        # one horizontal row per grade: badge on the left, total + ₹/kg on the right
+        # one horizontal row per grade: grade on the left, total + ₹/kg on the right
         for q in ("good", "fair", "poor"):
             r = top_by_quality.get(q)
             with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-                st.markdown(QUALITY_BADGE[q], width="content")
+                st.markdown(quality_tag(q), unsafe_allow_html=True, width="content")
                 st.space("stretch")
                 if r is None:
                     st.markdown(":gray[no listing]", width="content")
@@ -187,9 +226,15 @@ def cost_by_quality_kpi(top_by_quality: dict, need_kg: float, help: str | None =
 def recycler_logo(name: str, waste_types: str) -> str:
     """Monogram tile (no real logos: these are sample profiles)."""
     initials = "".join(w[0] for w in name.replace("&", " ").split() if w[0].isalpha())[:2].upper()
-    color = WASTE_COLOR.get(waste_types.split(",")[0].strip(), "#64748B")
-    return tip(f'<span class="mm-logo" style="--mm-logo:{color}">{html.escape(initials)}</span>',
-               "Recycler/facility profile (sample profile, not a verified partner)")
+    color = material_color(waste_types.split(",")[0].strip())
+    return tip(f'<span class="mm-logo" style="--c:{color}">{html.escape(initials)}</span>',
+               "Sample recycler profile, not a verified partner")
+
+
+def meta_row(*items: str) -> str:
+    """Inline facts separated by space. Items are escaped HTML or Streamlit markdown (a <span>, not a <div>,
+    so badges and :material/ icons inside are still rendered)."""
+    return '<span class="mm-meta">' + "".join(f"<span>{i}</span>" for i in items if i) + "</span>"
 
 
 def absorb_info(m: dict, quantity_kg: float) -> tuple[str, str]:
@@ -210,33 +255,33 @@ def absorb_info(m: dict, quantity_kg: float) -> tuple[str, str]:
 
 def recycler_card(m: dict, rank: int, quantity_kg: float, waste_type: str) -> None:
     prof = recycler_profiles().get(m["recycler_id"], {})
-    key = "card_top" if rank == 0 else f"card_rec_{rank}"
+    edge = m["waste_types"].split(",")[0].strip()
+    key = f"card_top__{edge}" if rank == 0 else f"card_rec_{rank}__{edge}"
     with st.container(border=True, key=key, gap="small"):
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
             st.markdown(recycler_logo(m["name"], m["waste_types"]), unsafe_allow_html=True, width="content")
             with st.container(gap="xxsmall"):
-                tag = ":green-badge[:material/workspace_premium: Best match]" if rank == 0 else f":gray-badge[#{rank + 1}]"
-                st.markdown(f"{tag} &nbsp; **{m['name']}**")
-                accepts = " ".join(type_badge(t.strip()) for t in m["waste_types"].split(","))
-                st.markdown(f"{accepts} &nbsp;:gray[{prof.get('area', '')}]")
+                tag = '<span class="mm-flag">Best match</span>' if rank == 0 else f'<span class="mm-rank">{rank + 1}.</span>'
+                st.markdown(f"{tag}<strong>{html.escape(m['name'])}</strong>", unsafe_allow_html=True)
+                accepts = "".join(type_tag(t.strip()) for t in m["waste_types"].split(","))
+                st.markdown(f"{accepts}<span class='mm-area'>{html.escape(prof.get('area', ''))}</span>",
+                            unsafe_allow_html=True)
             st.markdown(
                 tip(f'<span class="mm-score">{m["score"]:.0%}</span><span class="mm-score-label">match</span>',
-                    "Overall compatibility score from MaterialMatch's matching criteria: distance (50%), "
-                    "capacity fit (30%) and specialisation (20%). Open details for the breakdown.",
+                    "Overall score: distance (50%), capacity fit (30%) and specialisation (20%). "
+                    "Open details for the breakdown.",
                     below=True),
                 unsafe_allow_html=True, width="content")
         st.progress(min(max(m["score"], 0.0), 1.0))
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-            stats = (
-                tip(f"{icon('near_me')} {m['distance_km']:.1f} km",
-                    "Approximate straight-line distance between your selected location and this recycler.")
-                + '<span class="mm-dot">·</span>'
-                + tip(f"{icon('factory')} {m['capacity_kg_per_month']:,} kg/month",
-                      "Monthly processing capacity listed in this recycler's (sample) profile.")
-            )
             badge, why = absorb_info(m, quantity_kg)
-            st.markdown(stats + '<span class="mm-dot"></span>' + badge + " " + tip(icon("info"), why),
-                        unsafe_allow_html=True, width="content")
+            st.markdown(meta_row(
+                tip(f"{icon('near_me')} {m['distance_km']:.1f} km",
+                    "Straight-line distance between your location and this recycler."),
+                tip(f"{icon('factory')} {m['capacity_kg_per_month']:,} kg/month",
+                    "Monthly processing capacity listed in this sample profile."),
+                badge + " " + tip(icon("info"), why)),
+                unsafe_allow_html=True, width="content")
             st.space("stretch")
             if st.button("Details & contact", key=f"details_{rank}_{m['recycler_id']}", icon=":material/contact_page:",
                          type="tertiary"):
@@ -250,7 +295,7 @@ def recycler_dialog(m: dict, quantity_kg: float, waste_type: str) -> None:
         st.markdown(recycler_logo(m["name"], m["waste_types"]), unsafe_allow_html=True, width="content")
         with st.container(gap="xxsmall"):
             st.markdown(f'<span class="mm-dlg-name">{html.escape(m["name"])}</span>', unsafe_allow_html=True)
-            st.markdown(":gray-badge[:material/science: Sample profile, not a verified partner]")
+            st.markdown(":gray-badge[Sample profile, not a verified partner]")
 
     c1, c2 = st.columns(2, gap="medium")
     with c1:
@@ -261,14 +306,14 @@ def recycler_dialog(m: dict, quantity_kg: float, waste_type: str) -> None:
             st.markdown(f":material/language: **Website**  \n"
                         f"[{prof['website'].removeprefix('https://')}]({prof['website']})")
     with c2:
-        accepts = " ".join(type_badge(t.strip()) for t in m["waste_types"].split(","))
-        st.markdown(f":material/category: **Accepts**  \n{accepts}")
+        accepts = "".join(type_tag(t.strip()) for t in m["waste_types"].split(","))
+        st.markdown(f":material/category: **Accepts**  \n{accepts}", unsafe_allow_html=True)
         st.markdown(f":material/factory: **Monthly capacity**  \n{m['capacity_kg_per_month']:,} kg/month")
         st.markdown(f":material/near_me: **Distance**  \n{m['distance_km']:.1f} km from your location")
         st.markdown(f":material/insights: **Match score**  \n{m['score']:.0%}")
 
     with st.container(border=True, gap="small"):
-        st.markdown("**:material/lightbulb: Why this match?**")
+        st.markdown("**Why this match?**")
         b = m["score_breakdown"]
         w = RECYCLER_WEIGHTS
         n_types = len(m["waste_types"].split(","))
@@ -285,7 +330,7 @@ def recycler_dialog(m: dict, quantity_kg: float, waste_type: str) -> None:
              f"Accepts {n_types} waste type{'s' if n_types > 1 else ''}; specialists score higher (1 ÷ types)."),
         ]
         for label, k, text in rows:
-            st.progress(b[k], text=f"{label} · {b[k]:.0%} × weight {w[k]:.0%}")
+            st.progress(b[k], text=f"{label}: {b[k]:.0%}, weight {w[k]:.0%}")
             st.caption(text)
         st.caption("Score = " + " + ".join(f"{w[k]:.0%} × {b[k]:.0%}" for _, k, _ in rows)
                    + f" = **{m['score']:.0%}**. Sub-type and quality don't affect ranking; the sub-type is "
@@ -337,30 +382,37 @@ def price_text(r: dict, need_kg: float = 0) -> str:
 
 
 def source_badge(r: dict) -> str:
-    return (":blue-badge[:material/storefront: Your listing]" if r.get("source") == "Your listing"
-            else ":gray-badge[:material/science: Demo listing]")
+    return ('<span class="mm-src mm-src-mine">Your listing</span>' if r.get("source") == "Your listing"
+            else '<span class="mm-src">Demo listing</span>')
 
 
 def listing_card(r: dict, rank: int, need_kg: float = 0) -> None:
-    key = "card_top_l" if rank == 0 else f"card_lst_{rank}"
-    with st.container(border=True, key=key, gap="xxsmall"):
+    key = f"card_top_l__{r['waste_type']}" if rank == 0 else f"card_lst_{rank}__{r['waste_type']}"
+    has_query = r.get("has_query", True)
+    with st.container(border=True, key=key, gap="xsmall"):
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
             with st.container(gap="xxsmall"):
-                tag = ":green-badge[:material/workspace_premium: Top result]  " if rank == 0 else ""
-                st.markdown(f"{tag}**{sub_label(r['sub_type'])}** · {r['quantity_kg']:,} kg")
-                st.markdown(f"{type_badge(r['waste_type'])} :gray-badge[{r['quality'].capitalize()} quality] "
-                            f"{source_badge(r)}")
-            with st.container(width="content", gap="xxsmall"):
-                st.markdown(f"#### {r['score']:.0%}", text_alignment="right")
-                st.caption("match" if r.get("has_query", True) else "score", text_alignment="right",
-                           help=None if r.get("has_query", True) else
-                           "No search text entered: listings are ranked by distance and quality only.")
-        dist = f" · {r['distance_km']:.1f} km" if r.get("distance_km") is not None else ""
-        st.caption(f":material/location_on: {r['location_name']}{dist} &nbsp;·&nbsp; "
-                   f":material/sell: {price_text(r, need_kg)} &nbsp;·&nbsp; {listing_carbon_text(r, need_kg)}")
+                tag = f'<span class="mm-flag">{"Best match" if has_query else "Top result"}</span>' if rank == 0 else ""
+                st.markdown(f"{tag}<strong>{html.escape(sub_label(r['sub_type']))}</strong>"
+                            f"<span class='mm-area'>{r['quantity_kg']:,} kg available</span>", unsafe_allow_html=True)
+                st.markdown(type_tag(r["waste_type"]) + quality_tag(r["quality"]) + " " + source_badge(r),
+                            unsafe_allow_html=True)
+            st.markdown(
+                tip(f'<span class="mm-score">{r["score"]:.0%}</span>'
+                    f'<span class="mm-score-label">{"match" if has_query else "score"}</span>',
+                    "Text match, distance and quality combined. Open details for the breakdown." if has_query else
+                    "No search text entered: ranked by distance and quality only.", below=True),
+                unsafe_allow_html=True, width="content")
+        dist = f", {r['distance_km']:.1f} km" if r.get("distance_km") is not None else ""
+        carbon = listing_carbon_text(r, need_kg).replace(":material/eco: ", "", 1)
+        st.markdown(meta_row(f"{icon('location_on')} {html.escape(r['location_name'])}{dist}",
+                             f"{icon('sell')} {html.escape(price_text(r, need_kg))}",
+                             f'<span class="mm-carbon">{icon("eco")} {html.escape(carbon)}</span>'),
+                    unsafe_allow_html=True)
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-            contact = f" &nbsp;·&nbsp; :material/call: {r['seller_contact']}" if r.get("seller_contact") else ""
-            st.caption(f":material/storefront: {seller_display(r['seller_name'])}{contact}", width="content")
+            st.markdown(meta_row(f"{icon('storefront')} {html.escape(seller_display(r['seller_name']))}",
+                                 f"{icon('call')} {html.escape(r['seller_contact'])}" if r.get("seller_contact") else ""),
+                        unsafe_allow_html=True, width="content")
             st.space("stretch")
             if st.button("Details & contact", key=f"contact_{rank}_{r['waste_id']}", icon=":material/contact_page:",
                          type="tertiary"):
@@ -372,9 +424,10 @@ def listing_dialog(r: dict, need_kg: float = 0) -> None:
     seller = seller_display(r["seller_name"])
     email = listing_email(r)
     with st.container(gap="xxsmall"):
-        st.markdown(f'<span class="mm-dlg-name">{html.escape(sub_label(r["sub_type"]))} · {r["quantity_kg"]:,} kg</span>',
+        st.markdown(f'<span class="mm-dlg-name">{html.escape(sub_label(r["sub_type"]))}, {r["quantity_kg"]:,} kg</span>',
                     unsafe_allow_html=True)
-        st.markdown(f"{type_badge(r['waste_type'])} :gray-badge[{r['quality'].capitalize()} quality] {source_badge(r)}")
+        st.markdown(type_tag(r["waste_type"]) + quality_tag(r["quality"]) + " " + source_badge(r),
+                    unsafe_allow_html=True)
     if r.get("description"):
         st.write(r["description"])
 
@@ -399,7 +452,7 @@ def listing_dialog(r: dict, need_kg: float = 0) -> None:
 
     with st.container(border=True, gap="small"):
         has_query = r.get("has_query", True)
-        st.markdown(f"**:material/lightbulb: Why this {'match' if has_query else 'result'}?**")
+        st.markdown(f"**Why this {'match' if has_query else 'result'}?**")
         b, w = r["score_breakdown"], r["score_weights"]
         rows = []
         if "similarity" in b:
@@ -412,7 +465,7 @@ def listing_dialog(r: dict, need_kg: float = 0) -> None:
             ("Quality", "quality", f"{r['quality'].capitalize()} quality (good 100%, fair 70%, poor 40%)."),
         ]
         for label, k, text in rows:
-            st.progress(min(max(b[k], 0.0), 1.0), text=f"{label} · {b[k]:.0%} × weight {w[k]:.0%}")
+            st.progress(min(max(b[k], 0.0), 1.0), text=f"{label}: {b[k]:.0%}, weight {w[k]:.0%}")
             st.caption(text)
         st.caption("Score = " + " + ".join(f"{w[k]:.0%} × {b[k]:.0%}" for _, k, _ in rows) + f" = **{r['score']:.0%}**."
                    + ("" if has_query else " No search text was entered, so text match is not part of the score."))
@@ -431,12 +484,17 @@ def listing_dialog(r: dict, need_kg: float = 0) -> None:
 
 def results_map(origin: tuple[float, float], points: list[dict], height: int = 380,
                 origin_label: str = "Your waste", points_label: str = "Recyclers") -> None:
-    """Map with the origin (amber) and ranked points (green, best one larger). points: {lat, lon, name, detail}."""
+    """Map with the origin (yellow square-ish pin) and ranked points in their material colour, the best one larger.
+    points: {lat, lon, name, detail, waste_type}."""
     import pydeck as pdk
 
-    rows = [{"lat": origin[0], "lon": origin[1], "name": origin_label, "detail": "", "fill": [245, 158, 11, 235],
-             "r": 260}]
-    rows += [{**p, "fill": [16, 185, 129, 235] if i == 0 else [16, 185, 129, 170], "r": 320 if i == 0 else 200}
+    def rgb(hex_: str, a: int) -> list[int]:
+        return [int(hex_[i:i + 2], 16) for i in (1, 3, 5)] + [a]
+
+    rows = [{"lat": origin[0], "lon": origin[1], "name": origin_label, "detail": "", "fill": rgb("#F2C200", 255),
+             "line": rgb("#1C2529", 255), "r": 300}]
+    rows += [{**p, "fill": rgb(material_color(p.get("waste_type")), 240 if i == 0 else 190),
+              "line": [255, 255, 255, 230], "r": 320 if i == 0 else 200}
              for i, p in enumerate(points)]
     lats = [r["lat"] for r in rows]
     lons = [r["lon"] for r in rows]
@@ -445,15 +503,18 @@ def results_map(origin: tuple[float, float], points: list[dict], height: int = 3
     layer = pdk.Layer(
         "ScatterplotLayer", pd.DataFrame(rows), get_position="[lon, lat]", get_fill_color="fill",
         get_radius="r", radius_min_pixels=5, radius_max_pixels=14, stroked=True,
-        get_line_color=[255, 255, 255, 210], line_width_min_pixels=1.5, pickable=True,
+        get_line_color="line", line_width_min_pixels=1.5, pickable=True,
     )
     deck = pdk.Deck(
         layers=[layer],
         initial_view_state=pdk.ViewState(latitude=(max(lats) + min(lats)) / 2,
                                          longitude=(max(lons) + min(lons)) / 2, zoom=zoom),
         tooltip={"html": "<b>{name}</b><br/>{detail}",
-                 "style": {"fontSize": "12px", "borderRadius": "8px", "padding": "6px 8px"}},
+                 "style": {"fontSize": "12px", "borderRadius": "3px", "padding": "6px 8px"}},
         map_style=None,
     )
     st.pydeck_chart(deck, height=height)
-    st.caption(f":orange[●] {origin_label} &nbsp; :green[●] {points_label} · hover a point for details")
+    st.markdown(meta_row('<span class="mm-pin" style="--c:#F2C200"></span>' + html.escape(origin_label),
+                         '<span class="mm-pin" style="--c:var(--mm-muted)"></span>'
+                         f"{html.escape(points_label)}, largest is the best match"),
+                unsafe_allow_html=True)

@@ -1,18 +1,24 @@
+import altair as alt
 import streamlit as st
 
-from common import ALL_WASTE_TYPES, all_listings, fmt_kg, kpi, section_title, sub_label, waste_label
+from common import (ALL_WASTE_TYPES, all_listings, fmt_kg, kpi, material_color, page_header, section_title,
+                    sub_label, waste_label)
 from ml.carbon import load_factors
+
+
+def material_scale(types) -> alt.Scale:
+    """Bars keep each material's own colour (same as tags, card edges and map pins)."""
+    return alt.Scale(domain=[waste_label(t) for t in types], range=[material_color(t) for t in types])
+
 
 with st.container(horizontal=True, vertical_alignment="bottom"):
     with st.container(gap="xxsmall"):
-        st.markdown("## Impact overview")
-        st.caption("Potential impact if every listed batch were reused instead of sent to landfill, "
-                   "and the carbon factors behind the estimates.")
-    st.badge("Demo listings", icon=":material/science:", color="gray")
+        page_header("Impact", "What could be saved if every listed batch were reused instead of landfilled, "
+                              "and the carbon factors behind each estimate.")
+    st.badge("Demo listings", color="gray")
 
 # The carbon factors (formerly their own page) live in a second tab, so each view stays uncluttered.
-overview_tab, factors_tab = st.tabs([":material/insights: Overview", ":material/co2: Carbon factors"],
-                                    key="impact_tab")
+overview_tab, factors_tab = st.tabs(["Overview", "Carbon factors"], key="impact_tab")
 
 with overview_tab:
     df = all_listings()
@@ -36,27 +42,43 @@ with overview_tab:
                 help="Share of the CO₂e total that relies on proxy (surrogate) emission factors. "
                      "The Carbon factors tab lists which materials use them.")
 
+        present = [t for t in options if t in set(df["waste_type"])]
         left, right = st.columns(2, gap="medium")
         with left:
             with st.container(border=True, key="card_zone_chart"):
-                section_title("Waste by zone (tonnes)", "location_on")
-                by_zone = (df.assign(tonnes=df["quantity_kg"] / 1000, type=df["waste_type"].map(waste_label))
-                           .pivot_table(index="location_name", columns="type", values="tonnes",
-                                        aggfunc="sum", fill_value=0))
-                st.bar_chart(by_zone, horizontal=True, sort=False, height=440, x_label="", y_label="")
+                section_title("Waste by zone, tonnes")
+                by_zone = (df.assign(tonnes=df["quantity_kg"] / 1000, material=df["waste_type"].map(waste_label))
+                           .groupby(["location_name", "material"], as_index=False)["tonnes"].sum())
+                zone_order = (by_zone.groupby("location_name")["tonnes"].sum()
+                              .sort_values(ascending=False).index.tolist())
+                st.altair_chart(
+                    alt.Chart(by_zone).mark_bar().encode(
+                        x=alt.X("sum(tonnes):Q", title=None),
+                        y=alt.Y("location_name:N", sort=zone_order, title=None, axis=alt.Axis(labelLimit=220)),
+                        color=alt.Color("material:N", scale=material_scale(present), title="Material",
+                                        legend=alt.Legend(orient="bottom", columns=3)),
+                        tooltip=["location_name", "material", alt.Tooltip("tonnes:Q", format=",.1f")],
+                    ).properties(height=440, background="transparent"))
         with right:
             with st.container(border=True, key="card_sub_chart"):
-                section_title("CO₂e saved by sub-type (tonnes)", "eco")
+                section_title("CO₂e saved by material, tonnes")
                 by_sub = (df.dropna(subset=["co2e_saved_kg"])  # materials without a carbon factor have no bar
                           .groupby(["sub_type", "waste_type"], as_index=False)["co2e_saved_kg"].sum()
                           .assign(tonnes=lambda d: d["co2e_saved_kg"] / 1000,
                                   sub=lambda d: d["sub_type"].map(sub_label),
-                                  **{"Waste type": lambda d: d["waste_type"].map(waste_label)}))
-                st.bar_chart(by_sub, x="sub", y="tonnes", color="Waste type", horizontal=True, sort="-tonnes",
-                             height=440, x_label="", y_label="")
+                                  material=lambda d: d["waste_type"].map(waste_label)))
+                with_co2 = [t for t in present if t in set(by_sub["waste_type"])]
+                st.altair_chart(
+                    alt.Chart(by_sub).mark_bar().encode(
+                        x=alt.X("tonnes:Q", title=None),
+                        y=alt.Y("sub:N", sort="-x", title=None, axis=alt.Axis(labelLimit=220)),
+                        color=alt.Color("material:N", scale=material_scale(with_co2), title="Material",
+                                        legend=alt.Legend(orient="bottom", columns=3)),
+                        tooltip=["sub", "material", alt.Tooltip("tonnes:Q", format=",.1f")],
+                    ).properties(height=440, background="transparent"))
 
         with st.container(border=True, key="card_zone_table"):
-            section_title("By zone", "table_chart")
+            section_title("By zone")
             zone_table = (df.groupby("location_name")
                           .agg(listings=("waste_id", "count"), kg=("quantity_kg", "sum"),
                                co2e_kg=("co2e_saved_kg", "sum"))
@@ -74,7 +96,7 @@ with overview_tab:
                                                               max_value=float(zone_table["co2e_t"].max())),
                 },
             )
-        st.caption(":material/info: Concrete and brick have very small CO₂e factors; their main benefit is avoided "
+        st.caption("Concrete and brick have very small CO₂e factors; their main benefit is avoided "
                    "quarrying and landfill space, which these charts do not capture. Mixed trash has no carbon "
                    "factor, so it counts towards waste but not towards CO₂e.")
 
@@ -89,10 +111,10 @@ with factors_tab:
         kpi("f_proxy", "Proxy estimates", f"{int(f['is_proxy'].sum())}", "Surrogate factor, conservative")
         top = f.loc[f["co2e_saved_kg_per_kg"].idxmax()]
         kpi("f_max", "Highest saving", f"{top['co2e_saved_kg_per_kg']:.2f}",
-            f"kg CO₂e per kg · {sub_label(top['sub_type'])}")
+            f"kg CO₂e per kg, {sub_label(top['sub_type']).lower()}")
 
     with st.container(border=True, key="card_factors", gap="small"):
-        section_title("Factor by material", "table_chart")
+        section_title("Factor by material")
         # every waste type that has at least one factor (trash has none, so it is not offered)
         with_factors = [t for t in ALL_WASTE_TYPES if t in set(f["waste_type"])]
         ftypes = st.pills("Waste types with factors", with_factors, selection_mode="multi", default=with_factors,
@@ -120,5 +142,5 @@ with factors_tab:
                 "notes": st.column_config.TextColumn("Notes", width="medium"),
             },
         )
-    st.caption(":material/info: Sources: US EPA WARM recycling and composting chapters and cited LCAs. "
+    st.caption("Sources: US EPA WARM recycling and composting chapters and cited LCAs. "
                "Proxy estimates borrow the closest WARM category and are conservative, not India-specific.")

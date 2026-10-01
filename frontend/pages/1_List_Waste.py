@@ -5,8 +5,9 @@ import streamlit as st
 
 from backend import feedback_store
 from common import (ALL_WASTE_TYPES, CO2E_EXPLAINER, SESSION_ID_START, all_listings, carbon_label,
-                    classify_bytes, fmt_kg, get_classifier, kpi, recycler_card, results_map, section_title,
-                    recycler_profiles, seller_display, sub_label, waste_label, zone_coords, zones)
+                    classify_bytes, fmt_kg, get_classifier, kpi, page_header, recycler_card, results_map,
+                    section_title, recycler_profiles, seller_display, step_title, sub_label, waste_label,
+                    zone_coords, zones)
 from ml.embeddings import load_listings
 from ml.carbon import co2e_saved, load_factors
 from ml.classifier import feedback_memory
@@ -150,7 +151,7 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
     else:
         badge = ("green-badge[:material/auto_awesome: Detected]" if pred["is_confident"]
                  else "orange-badge[:material/help: Please confirm]")
-        st.markdown(f":{badge} **{waste_label(pred['label'])}** · {pred['confidence']:.0%} confidence", help=about)
+        st.markdown(f":{badge} **{waste_label(pred['label'])}** &nbsp;{pred['confidence']:.0%} confidence", help=about)
         if pred.get("status") == "confirm" and pred.get("confirm_reason"):
             if "low-resolution" in pred["confirm_reason"]:
                 why = "Small, low-resolution photo. The model over-predicts e-waste for these. Please check it."
@@ -166,8 +167,8 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
         if psub:
             sub_conf = sub_confidence(pred)
             auto = sub_conf >= SUBTYPE_AUTOFILL_MIN
-            st.markdown(f"Sub-type: **{sub_label(pred['sub_type'])}** · {sub_conf:.0%}"
-                        + (" · filled in" if auto else " · please choose it yourself"),
+            st.markdown(f"Sub-type **{sub_label(pred['sub_type'])}** at {sub_conf:.0%}"
+                        + (", filled in" if auto else ", please choose it yourself"),
                         help=f"Confidence of the sub-type within the detected material. At {SUBTYPE_AUTOFILL_MIN:.0%} "
                              "or more it is filled into the form automatically; below that the form keeps "
                              "'Not sure' so the carbon estimate isn't based on a guess.")
@@ -178,11 +179,11 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
                    help=f"Without that feedback the model would say {waste_label(g.get('waste_type'))} "
                         f"{g.get('confidence', 0):.0%}. Feedback weight {m['weight']:.0%} (closer photos count more)."
                    if g else "Confirmed feedback photos that look very similar were used.")
-    others = " · ".join(f"{waste_label(t['label'])} {t['confidence']:.0%}" for t in pred["top_k"][1:3])
+    others = "Next: " + ", ".join(f"{waste_label(t['label'])} {t['confidence']:.0%}" for t in pred["top_k"][1:3])
     if per_photo:
         n = len(per_photo)
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-            st.caption(f"{pred['agreement']} of {n} photos agree · {others}")
+            st.caption(f"{pred['agreement']} of {n} photos agree. {others}")
             with st.popover("Per photo", type="tertiary", icon=":material/photo_library:"):
                 for i, r in enumerate(per_photo, 1):
                     st.markdown(f"Photo {i}: **{pred_text(r)}**")
@@ -212,15 +213,16 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
                    "it also goes into the next retraining.")
 
 # ---------------------------------------------------------------- page
-st.markdown("## Match your waste to the right recycler")
-st.caption("Snap a photo, confirm the material, and get ranked recyclers with an estimate of the CO₂e saved.")
+page_header("Find a recycler for your waste",
+            "Photograph the material and check what the model sees. Then see which recyclers nearby can take "
+            "it, and how much CO₂e that saves compared with new material.")
 
 upload_col, details_col = st.columns([5, 7], gap="medium")
 
 with upload_col:
     with st.container(border=True, key="card_upload", gap="small"):
-        section_title("Waste photos", "add_a_photo")
-        st.caption(f"Up to {MAX_PHOTOS} photos · AI detects the material → you confirm it")
+        step_title(1, "Photos", "optional")
+        st.caption(f"Up to {MAX_PHOTOS} photos. The model suggests the material and you confirm it.")
         photos = st.file_uploader("Upload waste photos", type=["jpg", "jpeg", "png", "webp"],
                                   accept_multiple_files=True, key="photos", label_visibility="collapsed") or []
         if len(photos) > MAX_PHOTOS:
@@ -286,19 +288,19 @@ with upload_col:
                 prediction_block(sig, pred, error, per_photo)
 
         if not photos:
-            st.caption(":material/info: Optional: skip it if you already know the material. "
-                       "Several photos of one item improve the prediction.")
+            st.caption("Skip this if you already know the material. Several photos of one item give a "
+                       "better prediction.")
 
 with details_col:
     with st.container(border=True, key="card_details", gap="small"):
         multi = len(groups) > 1
         with st.container(horizontal=True, vertical_alignment="center", horizontal_alignment="distribute"):
-            section_title(f"Waste details · {len(groups)} items" if multi else "Waste details", "inventory_2")
+            step_title(2, "Waste details", f"{len(groups)} items" if multi else "")
             with st.popover("Use a listing", icon=":material/list_alt:", type="tertiary", disabled=multi,
                             help="Switch to a single item to load an existing listing." if multi else None):
                 listings = all_listings()
                 # no internal waste_id in the label (as on "I need feedstock"): material, amount, place, seller
-                labels = {int(r.waste_id): f"{sub_label(r.sub_type)} · {r.quantity_kg:,} kg · {r.location_name} · "
+                labels = {int(r.waste_id): f"{sub_label(r.sub_type)}, {r.quantity_kg:,} kg, {r.location_name}, "
                                            + (f"{r.seller_name} (yours)" if r.source != "Demo"
                                               else seller_display(r.seller_name))
                           for r in listings.itertuples()}
@@ -350,7 +352,7 @@ for item, files in groups:
 loc = ss.loc
 lat, lon = zone_coords(loc)
 for it in items:
-    it["label"] = f"{waste_label(it['waste_type'])} · {sub_label(it['sub_type'])}"
+    it["label"] = f"{waste_label(it['waste_type'])}, {sub_label(it['sub_type']).lower()}"
     it["carbon"] = co2e_saved(it["sub_type"], it["quantity_kg"], waste_type=it["waste_type"])
 
 # Pickup / drop-off choices = ONLY the recyclers in the database that accept a listed waste type.
@@ -494,20 +496,21 @@ if ss.show_results and no_quantity:
                icon=":material/scale:")
 
 if ss.show_results and not no_quantity:
-    st.space("small")
+    st.space("medium")
     with st.container(horizontal=True, vertical_alignment="bottom"):
         with st.container(gap="xxsmall"):
-            st.markdown("### Recommended recyclers")
+            step_title(3, "Recyclers near you")
             if len(items) == 1:
                 it = items[0]
-                st.caption(f"{it['quantity_kg']:,.0f} kg of {waste_label(it['waste_type']).lower()}"
-                           f"{' · ' + sub_label(it['sub_type']) if it['sub_type'] else ''} from {loc}")
+                st.caption(f"{it['quantity_kg']:,.0f} kg of "
+                           f"{(sub_label(it['sub_type']) if it['sub_type'] else waste_label(it['waste_type'])).lower()}"
+                           f" from {loc}")
             else:
                 total_kg = sum(i["quantity_kg"] for i in items)
                 total_co2 = sum(i["carbon"]["co2e_saved_kg"] or 0 for i in items)
                 no_factor = sum(i["carbon"]["co2e_saved_kg"] is None for i in items)
-                st.caption(f"{len(items)} items · {fmt_kg(total_kg)} from {loc} · "
-                           f"≈ {total_co2:,.0f} kg CO₂e saved in total"
+                st.caption(f"{len(items)} items, {fmt_kg(total_kg)} from {loc}, about "
+                           f"{total_co2:,.0f} kg CO₂e saved in total"
                            + (f" ({no_factor} item{'s' if no_factor > 1 else ''} without a carbon factor)"
                               if no_factor else ""))
 
@@ -516,7 +519,7 @@ if ss.show_results and not no_quantity:
         keys = [i["item"] for i in items]
         if ss.get("result_item") not in keys:
             ss.result_item = keys[0]
-        chosen = st.segmented_control("Show recyclers for", keys, key="result_item", width="stretch", required=True,
+        chosen = st.segmented_control("Show recyclers for", keys, key="result_item", required=True,
                                       format_func=lambda k: next(i["label"] for i in items if i["item"] == k))
         sel = next(i for i in items if i["item"] == (chosen or keys[0]))
 
@@ -540,7 +543,7 @@ if ss.show_results and not no_quantity:
         kpi("best", "Best match", f"{matches[0]['score']:.0%}" if matches else "n/a",
             matches[0]["name"] if matches else "No recycler profile yet")
     if carbon["note"]:
-        st.caption(f":material/info: {carbon['note']}")
+        st.caption(carbon["note"])
 
     if matches:
         list_col, map_col = st.columns([7, 5], gap="medium")
@@ -549,12 +552,13 @@ if ss.show_results and not no_quantity:
                 recycler_card(m, rank, sel["quantity_kg"], sel["waste_type"])
         with map_col:
             with st.container(border=True, key="card_map", gap="small"):
-                section_title("Bengaluru", "map")
+                section_title("Map")
                 results_map((lat, lon),
                             [{"lat": m["lat"], "lon": m["lon"], "name": m["name"],
-                              "detail": f"#{i + 1} · {m['score']:.0%} match · {m['distance_km']:.1f} km"}
+                              "waste_type": m["waste_types"].split(",")[0].strip(),
+                              "detail": f"Rank {i + 1}, {m['score']:.0%} match, {m['distance_km']:.1f} km"}
                              for i, m in enumerate(matches)],
-                            origin_label=f"Your waste · {loc}")
+                            origin_label=f"Your waste at {loc}")
     else:
         st.info(NO_RECYCLER_MESSAGE, icon=":material/search_off:")
 
