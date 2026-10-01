@@ -1,8 +1,12 @@
+import html
+
 import altair as alt
+import pandas as pd
 import streamlit as st
 
+from backend import feedback_store
 from common import (ALL_WASTE_TYPES, all_listings, fmt_kg, kpi, material_color, page_header, section_title,
-                    sub_label, waste_label)
+                    sub_label, type_tag, waste_label)
 from ml.carbon import load_factors
 
 
@@ -17,8 +21,74 @@ with st.container(horizontal=True, vertical_alignment="bottom"):
                               "and the carbon factors behind each estimate.")
     st.badge("Demo listings", color="gray")
 
-# The carbon factors (formerly their own page) live in a second tab, so each view stays uncluttered.
-overview_tab, factors_tab = st.tabs(["Overview", "Carbon factors"], key="impact_tab")
+def history_rows(rows: list[dict]) -> str:
+    """Recent predictions as ruled rows: time, material, confidence bar, status."""
+    out = []
+    for r in rows:
+        wt = r["waste_type"]
+        name = type_tag(wt) if wt in ALL_WASTE_TYPES else '<span class="mm-tag">Unknown</span>'
+        sub = (f'<span class="mm-area">{html.escape(sub_label(r["sub_type"]))}</span>'
+               if r.get("sub_type") and r["sub_type"] != wt else "")
+        status = {"detected": "Detected", "confirm": "Please confirm"}.get(r["status"], "Other / unknown")
+        out.append(f'<div><time>{r["time"]:%H:%M:%S}</time><span>{name}{sub}</span>'
+                   f'<span class="mm-bar" style="--c:{material_color(wt)}" title="{r["confidence"]:.0%}">'
+                   f'<i style="width:{r["confidence"]:.0%}"></i></span>'
+                   f'<span class="mm-st mm-st-{html.escape(str(r["status"]))}">{status}, {r["confidence"]:.0%}</span></div>')
+    return '<div class="mm-hist">' + "".join(out) + "</div>"
+
+
+# The carbon factors (formerly their own page) live in a tab, so each view stays uncluttered.
+overview_tab, class_tab, factors_tab = st.tabs(["Overview", "Classifications", "Carbon factors"], key="impact_tab")
+
+with class_tab:
+    log = st.session_state.get("class_log", [])
+    answered = feedback_store.load_feedback()
+    fs = feedback_store.summary()
+    st.caption("What the photo classifier has seen. Session numbers count this browser session only; "
+               "answered photos come from the saved feedback log.")
+    with st.container(horizontal=True, gap="small", key="kpis_class"):
+        if log:
+            counts = pd.Series([r["waste_type"] for r in log]).value_counts()
+            kpi("c_n", "Classified this session", f"{len(log)}",
+                f"{sum(r['photos'] for r in log)} photo{'s' if sum(r['photos'] for r in log) != 1 else ''}")
+            kpi("c_top", "Most detected", waste_label(counts.index[0]) if counts.index[0] in ALL_WASTE_TYPES
+                else "Unknown", f"{counts.iloc[0]} of {len(log)}")
+            kpi("c_conf", "Average confidence", f"{sum(r['confidence'] for r in log) / len(log):.0%}",
+                f"{sum(r['status'] == 'detected' for r in log)} detected without a doubt flag")
+        else:
+            kpi("c_n", "Classified this session", "0", "Add a photo on I have waste")
+        kpi("c_fb", "Answered by users", f"{fs['n_items']}",
+            f"{fs['accuracy_on_feedback']:.0%} confirmed correct" if fs["n_items"] else "No answers saved yet",
+            help="Photos where someone answered 'Was this prediction correct?'. Saved across sessions.")
+
+    left, right = st.columns([7, 5], gap="medium")
+    with left:
+        with st.container(border=True, key="card_history"):
+            section_title("Recent predictions")
+            if log:
+                st.html(history_rows(list(reversed(log))[:12]))
+            else:
+                st.html('<div class="mm-empty mm-gridbg"><b>No predictions yet</b><p>Classify a photo on '
+                        "I have waste or Present, and it shows up here.</p></div>")
+                st.page_link("pages/1_List_Waste.py", label="Classify a photo", icon=":material/arrow_forward:")
+    with right:
+        with st.container(border=True, key="card_answered"):
+            section_title("Answered photos by predicted material")
+            if answered:
+                fb = pd.DataFrame([{"material": waste_label(r["predicted_label"]),
+                                    "answer": "Confirmed" if r["is_correct"] else "Corrected",
+                                    "wt": r["predicted_label"]} for r in answered])
+                st.altair_chart(
+                    alt.Chart(fb).mark_bar().encode(
+                        x=alt.X("count():Q", title=None, axis=alt.Axis(tickMinStep=1)),
+                        y=alt.Y("material:N", sort="-x", title=None, axis=alt.Axis(labelLimit=200, labelOverlap=False)),
+                        color=alt.Color("answer:N", title=None, legend=alt.Legend(orient="bottom"),
+                                        scale=alt.Scale(domain=["Confirmed", "Corrected"],
+                                                        range=["#BEF04A", "#F0A43A"])),
+                        tooltip=["material", "answer", "count()"],
+                    ).properties(height=40 + 30 * fb["material"].nunique(), background="transparent"))
+            else:
+                st.caption("No answered photos yet.")
 
 with overview_tab:
     df = all_listings()
@@ -37,7 +107,11 @@ with overview_tab:
         with st.container(horizontal=True, gap="small", key="kpis_impact"):
             kpi("co2", "Potential CO₂e saved", f"{total_co2 / 1000:,.1f} t", "Estimated, vs. virgin production")
             kpi("kg", "Waste that could be diverted", fmt_kg(df["quantity_kg"].sum()), f"{len(df):,} listings")
-            kpi("zones", "Industrial zones", f"{df['location_name'].nunique()}", "Across Bengaluru")
+            residual = df.loc[df["waste_type"] == "trash", "quantity_kg"].sum()
+            kpi("recov", "Recoverable share", f"{1 - residual / df['quantity_kg'].sum():.0%}",
+                f"{fmt_kg(residual)} is mixed trash (residual)",
+                help="By material type: every listed material except mixed trash has a recovery route. "
+                     "It does not measure contamination within a batch.")
             kpi("proxy", "From proxy factors", f"{proxy_share:.0%}", "Share of CO₂e using surrogate factors",
                 help="Share of the CO₂e total that relies on proxy (surrogate) emission factors. "
                      "The Carbon factors tab lists which materials use them.")

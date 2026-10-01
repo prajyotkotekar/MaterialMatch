@@ -16,12 +16,12 @@ for p in (str(ROOT), str(HERE)):
 
 import streamlit as st  # noqa: E402
 
-from common import inject_css, theme  # noqa: E402
+from common import inject_css  # noqa: E402
 from ml.carbon import DISCLAIMER  # noqa: E402
 
 st.set_page_config(page_title="MaterialMatch", page_icon=str(HERE / "assets" / "mark.svg"), layout="wide")
 inject_css()
-st.logo(str(HERE / "assets" / f"logo_{theme()}.svg"), size="large")
+st.logo(str(HERE / "assets" / "logo.svg"), size="large")
 
 if "my_listings" not in st.session_state:
     st.session_state.my_listings = []
@@ -40,6 +40,7 @@ page = st.navigation(
         st.Page(PAGES / "2_Find_Matches.py", title="I need feedstock", url_path="feedstock"),
         # the carbon factors are a tab on the Impact page
         st.Page(PAGES / "3_Impact_Dashboard.py", title="Impact", url_path="impact"),
+        st.Page(PAGES / "4_Present.py", title="Present", url_path="present"),
     ],
     position="top",
 )

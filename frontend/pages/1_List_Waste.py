@@ -1,11 +1,13 @@
 import hashlib
+import time
 
 import pandas as pd
 import streamlit as st
 
+import visuals as vz
 from backend import feedback_store
 from common import (ALL_WASTE_TYPES, CO2E_EXPLAINER, SESSION_ID_START, all_listings, carbon_label,
-                    classify_bytes, fmt_kg, get_classifier, kpi, page_header, recycler_card, results_map,
+                    classify_bytes, fmt_kg, get_classifier, kpi, log_classification, recycler_card, results_map,
                     section_title, recycler_profiles, seller_display, step_title, sub_label, waste_label,
                     zone_coords, zones)
 from ml.embeddings import load_listings
@@ -16,6 +18,7 @@ from ml.matcher import NO_RECYCLER_MESSAGE, load_recyclers, match_recyclers
 from ml.taxonomy import photo_hierarchy, to_market_subtype
 
 MAX_PHOTOS = 4
+MIN_SCAN_S = 0.9  # keep the scan state on screen at least this long so the result reveal reads as one step
 SAME, DIFFERENT = "same", "different"
 WASTE_TYPES = ALL_WASTE_TYPES
 FEEDBACK_CHOICES = [*WASTE_TYPES, feedback_store.OTHER]
@@ -129,67 +132,44 @@ def save_feedback(sig: str) -> None:
                                if sub and sub != rec["actual_label"] else "unknown")
 
 
-def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: list[dict] | None) -> None:
+def confirm_reason(pred: dict) -> str | None:
+    """Plain-language reason behind 'Please confirm' or 'unknown'."""
+    if pred.get("is_unknown"):
+        return f"{(pred.get('unknown_reason') or 'unfamiliar photo').capitalize()}. Pick the material yourself if you know it."
+    if pred.get("status") != "confirm" or not pred.get("confirm_reason"):
+        return None
+    if "low-resolution" in pred["confirm_reason"]:
+        return "Small, low-resolution photo. The model over-predicts e-waste for these. Please check it."
+    if "different" in pred["confirm_reason"]:
+        return "Unfamiliar-looking photo. The best guess is filled in, please check it."
+    if len(pred["top_k"]) > 1:
+        second = pred["top_k"][1]
+        return f"Close call with {waste_label(second['label'])} at {second['confidence']:.0%}. Please check it."
+    return "Close call. Please check it."
+
+
+def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: list[dict] | None,
+                     reveal: bool = False, size: str = "lg") -> None:
     if error:
-        st.markdown(f":red-badge[:material/broken_image: {error}]")
-        st.caption("Try a JPG, PNG or WEBP photo, or choose the waste type manually.")
+        st.html(f'<div class="mm-empty"><b>{vz.esc(error)}</b><p>Try a JPG, PNG or WEBP photo, or choose the '
+                "waste type yourself in step 03.</p></div>")
         return
     if pred is None:
-        st.markdown(":gray-badge[:material/model_training: Model not ready]")
-        st.caption("Choose the waste type manually for now.")
+        st.html('<div class="mm-empty"><b>The classifier is not available</b><p>Choose the waste type yourself '
+                "in step 03.</p></div>")
         return
-    about = ("AI suggestion from the photo. The model knows 9 material types and 27 sub-types "
-             "(e.g. e-waste → keyboard, construction → concrete). 'Please confirm' = the photo looks "
-             "unfamiliar or two materials are close; 'Other / unknown' = both, or very unfamiliar. Photos "
-             "similar to ones users corrected are adjusted using that feedback. Always check it.")
-    if pred.get("is_unknown"):
-        g = pred.get("best_guess") or {}
-        st.markdown(":gray-badge[:material/help: Other / unknown material]", help=about)
-        st.caption(f"Closest match: {waste_label(g.get('waste_type'))} {g.get('confidence', 0):.0%}. "
-                   f"Not reliable enough to use ({pred.get('unknown_reason') or 'unfamiliar photo'}). "
-                   "Pick the material yourself if you know it.")
-    else:
-        badge = ("green-badge[:material/auto_awesome: Detected]" if pred["is_confident"]
-                 else "orange-badge[:material/help: Please confirm]")
-        st.markdown(f":{badge} **{waste_label(pred['label'])}** &nbsp;{pred['confidence']:.0%} confidence", help=about)
-        if pred.get("status") == "confirm" and pred.get("confirm_reason"):
-            if "low-resolution" in pred["confirm_reason"]:
-                why = "Small, low-resolution photo. The model over-predicts e-waste for these. Please check it."
-            elif "different" in pred["confirm_reason"]:
-                why = "Unfamiliar-looking photo. The best guess is filled in, please check it."
-            elif len(pred["top_k"]) > 1:
-                second = pred["top_k"][1]
-                why = f"Close call with {waste_label(second['label'])} {second['confidence']:.0%}. Please check it."
-            else:
-                why = "Close call. Please check it."
-            st.caption(f":orange[:material/info:] {why}")
-        psub = predicted_sub(pred)
-        if psub:
-            sub_conf = sub_confidence(pred)
-            auto = sub_conf >= SUBTYPE_AUTOFILL_MIN
-            st.markdown(f"Sub-type **{sub_label(pred['sub_type'])}** at {sub_conf:.0%}"
-                        + (", filled in" if auto else ", please choose it yourself"),
-                        help=f"Confidence of the sub-type within the detected material. At {SUBTYPE_AUTOFILL_MIN:.0%} "
-                             "or more it is filled into the form automatically; below that the form keeps "
-                             "'Not sure' so the carbon estimate isn't based on a guess.")
-    if pred.get("memory"):
-        m, g = pred["memory"], (pred["memory"].get("model_guess") or {})
-        st.caption(f":material/history: Adjusted using {m['n_similar']} similar photo"
-                   f"{'s' if m['n_similar'] > 1 else ''} confirmed by users",
-                   help=f"Without that feedback the model would say {waste_label(g.get('waste_type'))} "
-                        f"{g.get('confidence', 0):.0%}. Feedback weight {m['weight']:.0%} (closer photos count more)."
-                   if g else "Confirmed feedback photos that look very similar were used.")
-    others = "Next: " + ", ".join(f"{waste_label(t['label'])} {t['confidence']:.0%}" for t in pred["top_k"][1:3])
-    if per_photo:
-        n = len(per_photo)
-        with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-            st.caption(f"{pred['agreement']} of {n} photos agree. {others}")
-            with st.popover("Per photo", type="tertiary", icon=":material/photo_library:"):
-                for i, r in enumerate(per_photo, 1):
-                    st.markdown(f"Photo {i}: **{pred_text(r)}**")
-                st.caption("Combined by averaging each sub-type's probability across the photos.")
-    else:
-        st.caption(others)
+    sub_note = ""
+    if not pred.get("is_unknown") and predicted_sub(pred):
+        sub_conf = sub_confidence(pred)
+        sub_note = (f"Sub-type {sub_label(pred['sub_type'])} at {sub_conf:.0%}, "
+                    + ("filled in" if sub_conf >= SUBTYPE_AUTOFILL_MIN else "choose it yourself"))
+    st.html(vz.result_html(pred, reveal, size, sub_note))
+    reason = confirm_reason(pred)
+    if reason:
+        st.caption(f":orange[:material/info:] {reason}")
+    if size == "lg" and not pred.get("is_unknown"):
+        st.html(vz.facts_html(pred["label"], to_market_subtype(pred["label"], pred["sub_type"])
+                              if pred.get("sub_type") and pred["sub_type"] != pred["label"] else None))
 
     with st.container(horizontal=True, vertical_alignment="center", gap="small"):
         st.caption("Was this prediction correct?")
@@ -212,17 +192,34 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
         st.caption(":material/check: Saved, thanks. Similar photos uploaded from now on will use this answer; "
                    "it also goes into the next retraining.")
 
-# ---------------------------------------------------------------- page
-page_header("Find a recycler for your waste",
-            "Photograph the material and check what the model sees. Then see which recyclers nearby can take "
-            "it, and how much CO₂e that saves compared with new material.")
+    with st.expander("How the model decided"):
+        st.caption("The model knows 9 materials and 27 sub-types. 'Please confirm' means the photo looks "
+                   "unfamiliar or two materials are close; 'Other / unknown' means both, or very unfamiliar. "
+                   f"The sub-type is filled into the form only at {SUBTYPE_AUTOFILL_MIN:.0%} or more, so the carbon "
+                   "estimate isn't based on a guess.")
+        st.markdown("Next most likely: " + ", ".join(f"{waste_label(t['label'])} {t['confidence']:.0%}"
+                                                     for t in pred["top_k"][1:3]))
+        if pred.get("memory"):
+            m, g = pred["memory"], (pred["memory"].get("model_guess") or {})
+            st.markdown(f"Adjusted using {m['n_similar']} similar photo{'s' if m['n_similar'] > 1 else ''} "
+                        "confirmed by users" + (f". Without that feedback the model would say "
+                                                f"{waste_label(g.get('waste_type'))} {g.get('confidence', 0):.0%}"
+                                                if g else "") + f" (feedback weight {m['weight']:.0%}).")
+        if per_photo:
+            st.markdown(f"{pred['agreement']} of {len(per_photo)} photos agree, combined by averaging each "
+                        "sub-type's probability:")
+            for i, r in enumerate(per_photo, 1):
+                st.markdown(f"Photo {i}: **{pred_text(r)}**")
 
-upload_col, details_col = st.columns([5, 7], gap="medium")
+
+# ---------------------------------------------------------------- page
+st.html(vz.hero_html())
+
+upload_col, ident_col = st.columns([5, 7], gap="medium")
 
 with upload_col:
     with st.container(border=True, key="card_upload", gap="small"):
-        step_title(1, "Photos", "optional")
-        st.caption(f"Up to {MAX_PHOTOS} photos. The model suggests the material and you confirm it.")
+        step_title(1, "Input", "optional")
         photos = st.file_uploader("Upload waste photos", type=["jpg", "jpeg", "png", "webp"],
                                   accept_multiple_files=True, key="photos", label_visibility="collapsed") or []
         if len(photos) > MAX_PHOTOS:
@@ -237,14 +234,30 @@ with upload_col:
                              DIFFERENT: ":material/category: Different items"}.get,
                 help="One item: the photos are combined into a single prediction and one listing. "
                      "Different items: each photo becomes its own item in one submission.") or SAME
+        if photos:
+            st.html(vz.file_rows(photos))
+            if len(photos) == 1:
+                st.html(f'<div class="mm-preview mm-gridbg"><img src="{vz.thumb_uri(photos[0].getvalue(), 720)}" '
+                        'alt="Preview of the uploaded photo"></div>')
+        else:
+            st.caption(f"Up to {MAX_PHOTOS} photos. Several angles of one item give a better prediction. "
+                       "Skip this if you already know the material.")
 
-        groups = ([(p.file_id, [p]) for p in photos] if mode == DIFFERENT
-                  else [("main", photos)])
-        store_mode = ("different_items" if mode == DIFFERENT else "same_item" if len(photos) > 1 else "single")
-        classify, model_err = get_classifier() if photos else (None, None)
+groups = ([(p.file_id, [p]) for p in photos] if mode == DIFFERENT else [("main", photos)])
+store_mode = ("different_items" if mode == DIFFERENT else "same_item" if len(photos) > 1 else "single")
+classify, model_err = get_classifier() if photos else (None, None)
+
+with ident_col:
+    with st.container(border=True, key="card_ident", gap="small"):
+        step_title(2, "Identification", f"{len(groups)} items" if len(groups) > 1 else "")
+        scan_slot = st.empty()
 
         item_preds: dict[str, dict | None] = {}
         item_sigs: dict[str, str] = {}
+        item_errors: dict[str, str | None] = {}
+        item_per_photo: dict[str, list | None] = {}
+        fresh: set[str] = set()  # predictions made on this run: they get the reveal animation
+        started = None
         for item, files in groups:
             wt_key, sub_key, qty_key = form_keys(item)
             ss.setdefault(sub_key, "unknown")
@@ -259,11 +272,17 @@ with upload_col:
                 pred = ss.pred_cache[sig]["pred"]
                 per_photo = pred.get("per_image") if len(files) > 1 else None
             elif not model_err:
+                if started is None:  # the scan runs while the model is actually working
+                    started = time.monotonic()
+                    scan_slot.html(vz.scan_html(files))
                 try:
                     mv = feedback_memory.version()
                     results = [classify_bytes(f.getvalue(), mv) for f in files]
                     pred = combine_predictions(results) if len(results) > 1 else results[0]
                     per_photo = pred.get("per_image") if len(results) > 1 else None
+                    if pred:
+                        fresh.add(sig)
+                        log_classification(pred, len(files), "I have waste")
                 except (ValueError, TypeError):
                     error = "Couldn't read this image" if len(files) == 1 else "Couldn't read one of the photos"
             if pred:
@@ -275,27 +294,35 @@ with upload_col:
                         ss[wt_key] = pred["label"]
                         ss[sub_key] = form_subtype(pred)
             ss.setdefault(wt_key, WASTE_TYPES[0])
-            item_preds[item] = pred
-
-            side_by_side = mode == DIFFERENT or len(files) == 1
-            with st.container(horizontal=True, vertical_alignment="top", gap="small"):
-                for f in files:
-                    st.image(f, width=72 if side_by_side else 64)
-                if side_by_side:
-                    with st.container(gap="xxsmall"):
-                        prediction_block(sig, pred, error, None)
-            if not side_by_side:
-                prediction_block(sig, pred, error, per_photo)
+            item_preds[item], item_errors[item], item_per_photo[item] = pred, error, per_photo
+        if started is not None:
+            time.sleep(max(0.0, MIN_SCAN_S - (time.monotonic() - started)))
+            scan_slot.empty()
 
         if not photos:
-            st.caption("Skip this if you already know the material. Several photos of one item give a "
-                       "better prediction.")
+            st.html('<div class="mm-empty mm-gridbg"><b>Waiting for a photo</b><p>Add one in step 01. The model '
+                    "names the material and its sub-type, you confirm it, and step 03 is filled in for you.</p></div>")
+        elif model_err:
+            prediction_block("", None, None, None)
+        elif len(groups) == 1:
+            item = groups[0][0]
+            prediction_block(item_sigs[item], item_preds.get(item), item_errors.get(item), item_per_photo.get(item),
+                             reveal=item_sigs[item] in fresh)
+        else:
+            for n, (item, files) in enumerate(groups, 1):
+                with st.container(gap="xsmall"):
+                    st.caption(f"Item {n}: {files[0].name}")
+                    prediction_block(item_sigs[item], item_preds.get(item), item_errors.get(item), None,
+                                     reveal=item_sigs[item] in fresh, size="sm")
+
+st.space("small")
+loop_col, details_col = st.columns([5, 7], gap="medium")
 
 with details_col:
     with st.container(border=True, key="card_details", gap="small"):
         multi = len(groups) > 1
         with st.container(horizontal=True, vertical_alignment="center", horizontal_alignment="distribute"):
-            step_title(2, "Waste details", f"{len(groups)} items" if multi else "")
+            step_title(3, "Details", f"{len(groups)} items" if multi else "")
             with st.popover("Use a listing", icon=":material/list_alt:", type="tertiary", disabled=multi,
                             help="Switch to a single item to load an existing listing." if multi else None):
                 listings = all_listings()
@@ -338,6 +365,14 @@ with details_col:
             if st.button("Find matching recyclers", type="primary", icon=":material/travel_explore:",
                          width="stretch"):
                 ss.show_results = True
+
+with loop_col:
+    with st.container(border=True, key="card_loop", gap="small"):
+        loop_item = groups[0][0]
+        loop_wt, loop_sub = ss[form_keys(loop_item)[0]], ss[form_keys(loop_item)[1]]
+        section_title(f"Where does {waste_label(loop_wt).lower()} go next?")
+        st.html(vz.loop_html(loop_wt, None if loop_sub == "unknown" else loop_sub))
+        st.caption("General recovery route for this material. Follows the waste type in step 03.")
 
 # Always built from the CURRENT form values: results and publishing can't use stale input.
 items = []
@@ -499,7 +534,7 @@ if ss.show_results and not no_quantity:
     st.space("medium")
     with st.container(horizontal=True, vertical_alignment="bottom"):
         with st.container(gap="xxsmall"):
-            step_title(3, "Recyclers near you")
+            step_title(4, "Recyclers near you")
             if len(items) == 1:
                 it = items[0]
                 st.caption(f"{it['quantity_kg']:,.0f} kg of "

@@ -13,7 +13,8 @@ Manufacturers can search listed waste in plain words.
   recycler matching, CO₂e estimate, publish a listing.
 - **I need feedstock**: semantic search over listings, ranked by relevance, distance and quality, with
   cost and CO₂e for the quantity needed.
-- **Impact**: totals and charts across listings, plus the carbon factor table with sources.
+- **Impact**: totals and charts across listings, the photos classified so far, and the carbon factor table with sources.
+- **Present**: a full-width live classification view for demos (large result, recovery loop, session history).
 - **Feedback loop**: users confirm or correct predictions; confirmed photos adjust similar future
   predictions right away and can be used for a gated retrain.
 
@@ -66,7 +67,7 @@ first use.
 ## Project layout
 
 ```
-frontend/   Streamlit pages (I have waste, I need feedstock, Impact)
+frontend/   Streamlit pages (I have waste, I need feedstock, Impact, Present) and visuals.py
 backend/    FastAPI routes: listings, match, classify, feedback
 ml/         taxonomy, carbon, embeddings, matcher, evaluation
 ml/classifier/   dataset build, training, prediction, unknown detection, feedback learning, evaluation

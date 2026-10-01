@@ -20,20 +20,14 @@ ROOT = HERE.parent
 WASTE_TYPES = ["textile", "plastic", "construction", "e_waste"]  # marketplace types (listings, recyclers, factors)
 ALL_WASTE_TYPES = list(taxonomy.WASTE_TYPES)  # + types the photo model recognises (paper, glass, ...)
 WASTE_LABELS = taxonomy.WASTE_LABELS
-# One colour per material, used for tags, card edges, chart bars and map pins (and nothing else).
-# Same order as chartCategoricalColors in .streamlit/config.toml.
-WASTE_COLOR = {
-    "light": {"construction": "#8B6B4E", "e_waste": "#2F6FD6", "plastic": "#E2622B", "textile": "#8E52C9",
-              "paper": "#C08A2B", "glass": "#12A1A8", "metal": "#6B7A88", "biological": "#3E9B3A", "trash": "#C9384A"},
-    "dark": {"construction": "#B08B6B", "e_waste": "#5C93F0", "plastic": "#F07C47", "textile": "#AD7FE0",
-             "paper": "#D9A84A", "glass": "#2CC0C6", "metal": "#94A3B0", "biological": "#62B95C", "trash": "#E2596A"},
-}
-TOKENS = {
-    "light": {"ground": "#F1F2EE", "sheet": "#FFFFFF", "ink": "#1C2529", "muted": "#5C676C", "rule": "#D7DCD7",
-              "rule-strong": "#AEB7B2", "mark": "#1C2529", "carbon": "#1E7A4C", "link": "#1F4FB8"},
-    "dark": {"ground": "#161C1F", "sheet": "#1D2528", "ink": "#E6E9E4", "muted": "#9AA6AB", "rule": "#2E3A40",
-             "rule-strong": "#4A5960", "mark": "#F2C200", "carbon": "#5CC98E", "link": "#8DB1FF"},
-}
+# One earth-toned colour per material, used for tags, card edges, the result card, charts and map pins
+# (and nothing else). Same order as chartCategoricalColors in .streamlit/config.toml.
+WASTE_COLOR = {"construction": "#B48F6E", "e_waste": "#8BA8D4", "plastic": "#E3965F", "textile": "#C29AD4",
+               "paper": "#D6BC78", "glass": "#79C3BA", "metal": "#A9B1B6", "biological": "#A9BE6E", "trash": "#D88580"}
+# Design tokens, exposed to style.css as --mm-<name>. Lime is the single accent: live/AI states and main actions.
+TOKENS = {"ground": "#121512", "panel": "#191D19", "raised": "#20251F", "line": "#2B312A", "line-strong": "#3E463C",
+          "text": "#E9ECE4", "muted": "#99A296", "faint": "#6E776B", "bone": "#ECEBE3", "ink": "#121512",
+          "lime": "#BEF04A", "amber": "#F0A43A", "red": "#E8776E"}
 SESSION_ID_START = 10_000
 CO2E_EXPLAINER = "Estimated impact from diverting this material to reuse/recycling."
 RAW_DIR = ROOT / "data" / "raw"
@@ -46,15 +40,8 @@ waste_label = taxonomy.waste_label
 sub_label = taxonomy.sub_label
 
 
-def theme() -> str:
-    try:
-        return "dark" if st.context.theme.type == "dark" else "light"
-    except Exception:  # outside a browser session (tests)
-        return "light"
-
-
 def material_color(t: str | None) -> str:
-    return WASTE_COLOR[theme()].get(t or "", "#6B7A88")
+    return WASTE_COLOR.get(t or "", "#6E776B")
 
 
 def type_tag(t: str) -> str:
@@ -90,10 +77,9 @@ def icon(name: str) -> str:
 # ---------- styling ----------
 
 def inject_css() -> None:
-    mode = theme()
-    tokens = ";".join(f"--mm-{k}:{v}" for k, v in TOKENS[mode].items())
+    tokens = ";".join(f"--mm-{k}:{v}" for k, v in TOKENS.items())
     # result cards get their material colour as the left edge (card keys end in "__<waste_type>")
-    edges = "".join(f'[class*="st-key-card_"][class*="__{t}"]{{--mm-edge:{c}}}' for t, c in WASTE_COLOR[mode].items())
+    edges = "".join(f'[class*="st-key-card_"][class*="__{t}"]{{--mm-edge:{c}}}' for t, c in WASTE_COLOR.items())
     st.html(f"<style>:root{{{tokens}}}{edges}{(HERE / 'style.css').read_text(encoding='utf-8')}</style>")
 
 
@@ -105,8 +91,16 @@ def page_header(title: str, lede: str) -> None:
 def step_title(n: int, text: str, note: str = "") -> None:
     """Numbered step heading (only for pages that are a real sequence)."""
     extra = f'<span class="mm-step-note">{html.escape(note)}</span>' if note else ""
-    st.markdown(f'<div class="mm-step"><span class="mm-step-n">{n}</span><span>{html.escape(text)}</span>{extra}</div>',
+    st.markdown(f'<div class="mm-step"><span class="mm-step-n">{n:02d}</span><span>{html.escape(text)}</span>{extra}</div>',
                 unsafe_allow_html=True)
+
+
+def log_classification(pred: dict, n_photos: int, source: str) -> None:
+    """Session history of new predictions (for the dashboard and Present page). Never written to disk."""
+    log = st.session_state.setdefault("class_log", [])
+    log.append({"time": pd.Timestamp.now(), "waste_type": pred.get("label"), "sub_type": pred.get("sub_type"),
+                "confidence": float(pred.get("confidence") or 0), "status": pred.get("status") or
+                ("unknown" if pred.get("is_unknown") else "detected"), "photos": n_photos, "source": source})
 
 
 # ---------- data ----------
@@ -121,7 +115,7 @@ def get_classifier():
         return None, str(exc)
 
 
-@st.cache_data(max_entries=64, show_spinner="Analysing photo…")
+@st.cache_data(max_entries=64, show_spinner=False)  # the page shows its own scan state
 def classify_bytes(data: bytes, memory_version: str = "") -> dict | None:
     """Prediction for one photo, with the probability of every class (needed to combine photos).
 
