@@ -213,7 +213,7 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
 
 
 # ---------------------------------------------------------------- page
-st.html(vz.hero_html())
+st.html(vz.classifier_hero_html())
 
 upload_col, ident_col = st.columns([5, 7], gap="medium")
 

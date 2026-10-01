@@ -14,7 +14,26 @@ for p in (str(ROOT), str(HERE)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
+import importlib  # noqa: E402
+
 import streamlit as st  # noqa: E402
+
+
+def _reload_changed(names: tuple[str, ...]) -> None:
+    """Streamlit reruns page scripts after an edit but keeps imported modules cached, so a running server
+    would mix new pages with old helpers (ImportError on every page). Reload ours when their file changed."""
+    stale = False  # once one module reloads, later ones (which import from it) reload too
+    for name in names:
+        mod = sys.modules.get(name)
+        if mod is None or not getattr(mod, "__file__", None):
+            continue
+        mtime = Path(mod.__file__).stat().st_mtime
+        if stale or getattr(mod, "_mm_mtime", mtime) != mtime:
+            mod, stale = importlib.reload(mod), True
+        mod._mm_mtime = mtime
+
+
+_reload_changed(("common", "visuals"))  # order matters: visuals imports from common
 
 from common import inject_css  # noqa: E402
 from ml.carbon import DISCLAIMER  # noqa: E402
@@ -48,3 +67,4 @@ page = st.navigation(
 page.run()
 
 st.markdown(f'<p class="mm-foot">{html.escape(DISCLAIMER)}</p>', unsafe_allow_html=True)
+_reload_changed(("common", "visuals"))  # records the file times of modules first imported on this run

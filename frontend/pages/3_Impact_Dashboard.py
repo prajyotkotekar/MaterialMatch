@@ -5,8 +5,9 @@ import pandas as pd
 import streamlit as st
 
 from backend import feedback_store
-from common import (ALL_WASTE_TYPES, all_listings, fmt_kg, kpi, material_color, page_header, section_title,
-                    sub_label, type_tag, waste_label)
+import visuals as vz
+from common import (ALL_WASTE_TYPES, all_listings, fmt_kg, kpi, material_color, section_title, sub_label, type_tag,
+                    waste_label)
 from ml.carbon import load_factors
 
 
@@ -15,11 +16,17 @@ def material_scale(types) -> alt.Scale:
     return alt.Scale(domain=[waste_label(t) for t in types], range=[material_color(t) for t in types])
 
 
-with st.container(horizontal=True, vertical_alignment="bottom"):
-    with st.container(gap="xxsmall"):
-        page_header("Impact", "What could be saved if every listed batch were reused instead of landfilled, "
-                              "and the carbon factors behind each estimate.")
-    st.badge("Demo listings", color="gray")
+_all = all_listings()
+_co2 = _all.dropna(subset=["co2e_saved_kg"]).groupby("waste_type")["co2e_saved_kg"].sum()
+_co2 = _co2.reindex([t for t in ALL_WASTE_TYPES if t in _co2.index])
+st.html(vz.hero_html(
+    "What this marketplace could keep out of landfill.",
+    "Potential impact if every listed batch were reused instead of landfilled, what the photo classifier has "
+    "seen, and the carbon factors behind each estimate.",
+    f"Demo listings: {len(_all)} batches, {fmt_kg(_all['quantity_kg'].sum())}",
+    ["Listed waste", "Carbon factor", "CO₂e avoided", "Where it comes from"],
+    vz.wheel_html([(t, float(kg), f"{waste_label(t)} {kg / 1000:,.0f} t") for t, kg in _co2.items()],
+                  f"{_co2.sum() / 1000:,.0f} t", "CO₂e potential by material (estimate)")))
 
 def history_rows(rows: list[dict]) -> str:
     """Recent predictions as ruled rows: time, material, confidence bar, status."""
@@ -115,6 +122,27 @@ with overview_tab:
             kpi("proxy", "From proxy factors", f"{proxy_share:.0%}", "Share of CO₂e using surrogate factors",
                 help="Share of the CO₂e total that relies on proxy (surrogate) emission factors. "
                      "The Carbon factors tab lists which materials use them.")
+
+        # Biggest lever: the sub-type with the largest potential CO2e in the current selection
+        by_sub = (df.dropna(subset=["co2e_saved_kg"]).groupby(["sub_type", "waste_type"])
+                  .agg(co2=("co2e_saved_kg", "sum"), kg=("quantity_kg", "sum"), n=("waste_id", "count"),
+                       proxy=("carbon_is_proxy", "max")).reset_index().sort_values("co2", ascending=False))
+        if not by_sub.empty and total_co2:
+            lever = by_sub.iloc[0]
+            zone = (df[df["sub_type"] == lever["sub_type"]].groupby("location_name")["quantity_kg"].sum().idxmax())
+            st.space("small")
+            st.html(vz.spotlight_html(
+                "Biggest lever in this selection", sub_label(lever["sub_type"]),
+                f"{fmt_kg(lever['kg'])} listed in {lever['n']} batches, about {lever['co2'] / 1000:,.1f} t CO₂e potential",
+                vz.chip("Proxy estimate", "warn") if lever["proxy"] else vz.chip("Sourced factor"),
+                float(lever["co2"] / total_co2), "of CO₂e", material_color(lever["waste_type"]), size="sm"))
+            st.html(vz.cells_html([
+                ("Carbon factor", f"{lever['co2'] / lever['kg']:.2f} kg CO₂e per kg", "From the factor table"),
+                ("Share of potential", f"{lever['co2'] / total_co2:.0%} of {total_co2 / 1000:,.0f} t", "This selection"),
+                ("Most listed in", zone, "Industrial zone"),
+                ("Material", waste_label(lever["waste_type"]), f"{len(by_sub)} sub-types have a factor"),
+            ]))
+            st.space("small")
 
         present = [t for t in options if t in set(df["waste_type"])]
         left, right = st.columns(2, gap="medium")

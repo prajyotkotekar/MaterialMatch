@@ -25,9 +25,9 @@ WASTE_LABELS = taxonomy.WASTE_LABELS
 WASTE_COLOR = {"construction": "#B48F6E", "e_waste": "#8BA8D4", "plastic": "#E3965F", "textile": "#C29AD4",
                "paper": "#D6BC78", "glass": "#79C3BA", "metal": "#A9B1B6", "biological": "#A9BE6E", "trash": "#D88580"}
 # Design tokens, exposed to style.css as --mm-<name>. Lime is the single accent: live/AI states and main actions.
-TOKENS = {"ground": "#121512", "panel": "#191D19", "raised": "#20251F", "line": "#2B312A", "line-strong": "#3E463C",
-          "text": "#E9ECE4", "muted": "#99A296", "faint": "#6E776B", "bone": "#ECEBE3", "ink": "#121512",
-          "lime": "#BEF04A", "amber": "#F0A43A", "red": "#E8776E"}
+TOKENS = {"ground": "#272C29", "panel": "#2F3531", "raised": "#383F3A", "line": "#434B45", "line-strong": "#58625B",
+          "text": "#EEF0EA", "muted": "#B0B8AE", "faint": "#8F988D", "bone": "#F1F0E8", "ink": "#1A1E1B",
+          "lime": "#C6F25A", "amber": "#F2AE4A", "red": "#EC857C"}
 SESSION_ID_START = 10_000
 CO2E_EXPLAINER = "Estimated impact from diverting this material to reuse/recycling."
 RAW_DIR = ROOT / "data" / "raw"
