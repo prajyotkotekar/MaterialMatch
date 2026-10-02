@@ -17,6 +17,7 @@ from ml.matcher import load_recyclers
 
 _lock = threading.Lock()
 _user_listings: list[dict] = []
+MAX_USER_LISTINGS = 1000  # kept in memory, so capped
 
 
 def _csv_listings() -> list[dict]:
@@ -35,7 +36,10 @@ def get_listing(waste_id: int) -> dict | None:
 
 
 def add_listing(data: dict) -> dict:
+    """Raises OverflowError when MAX_USER_LISTINGS is reached."""
     with _lock:
+        if len(_user_listings) >= MAX_USER_LISTINGS:
+            raise OverflowError(f"Listing limit of {MAX_USER_LISTINGS} reached; restart the API to clear it")
         next_id = max([int(load_listings()["waste_id"].max())]
                       + [r["waste_id"] for r in _user_listings]) + 1
         row = {"waste_id": next_id, **data, "is_synthetic": False, "source": "user_submitted"}

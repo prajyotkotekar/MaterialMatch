@@ -4,26 +4,28 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from backend import feedback_store
 from backend.routes.classify import read_upload
+from backend.security import require_api_key
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
 
-@router.post("", status_code=201)
+# Confirmed answers feed the instant feedback memory, so writing is protected by MM_API_KEY when it is set.
+@router.post("", status_code=201, dependencies=[Depends(require_api_key)])
 async def post_feedback(
     files: list[UploadFile] = File(..., description="the 1-4 photos the prediction was made from"),
-    predicted_label: str = Form(...),
+    predicted_label: str = Form(..., max_length=40),
     predicted_confidence: float = Form(..., ge=0, le=1),
     is_correct: bool = Form(...),
     actual_label: Literal["textile", "plastic", "construction", "e_waste", "paper", "glass", "metal",
                           "biological", "trash", "other"] | None = Form(None),
     mode: Literal["single", "same_item", "different_items"] = Form("single"),
-    predicted_sub_type: str | None = Form(None, description="sub-type the model predicted"),
-    actual_sub_type: str | None = Form(None, description="correct sub-type, if the user chose one"),
+    predicted_sub_type: str | None = Form(None, max_length=60, description="sub-type the model predicted"),
+    actual_sub_type: str | None = Form(None, max_length=60, description="correct sub-type, if the user chose one"),
 ):
     if not 1 <= len(files) <= 4:
         raise HTTPException(422, "Send 1-4 photos")

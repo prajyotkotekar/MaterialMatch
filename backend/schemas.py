@@ -15,15 +15,15 @@ Quality = Literal["good", "fair", "poor"]
 
 class ListingIn(BaseModel):
     waste_type: WasteType
-    sub_type: str | None = None
-    quantity_kg: int = Field(gt=0)
+    sub_type: str | None = Field(default=None, max_length=60)
+    quantity_kg: int = Field(gt=0, le=100_000_000)
     quality: Quality = "fair"
     location_name: str = Field(min_length=1, max_length=120)
     location_lat: float = Field(ge=-90, le=90)
     location_lon: float = Field(ge=-180, le=180)
     seller_name: str = Field(min_length=1, max_length=120)
     seller_contact: str | None = Field(default=None, max_length=40)
-    price_per_kg: int | None = Field(default=None, ge=0)
+    price_per_kg: int | None = Field(default=None, ge=0, le=1_000_000)
     description: str = Field(default="", max_length=2000)
 
 
@@ -36,8 +36,8 @@ class Listing(ListingIn):
 class MatchRequest(BaseModel):
     waste_id: int | None = Field(default=None, description="match an existing listing, or give the fields below")
     waste_type: WasteType | None = None
-    sub_type: str | None = None
-    quantity_kg: float | None = Field(default=None, gt=0)
+    sub_type: str | None = Field(default=None, max_length=60)
+    quantity_kg: float | None = Field(default=None, gt=0, le=100_000_000)
     lat: float | None = Field(default=None, ge=-90, le=90)
     lon: float | None = Field(default=None, ge=-180, le=180)
     top_k: int = Field(default=5, ge=1, le=50)
@@ -77,7 +77,7 @@ class FeedstockQuery(BaseModel):
     sub_type: str | None = Field(default=None, max_length=60, description="listing sub-type, e.g. cotton_scrap")
     lat: float | None = Field(default=None, ge=-90, le=90)
     lon: float | None = Field(default=None, ge=-180, le=180)
-    min_quantity_kg: float = Field(default=0, ge=0)
+    min_quantity_kg: float = Field(default=0, ge=0, le=100_000_000)
     quality: list[Quality] | None = None
     top_k: int = Field(default=10, ge=1, le=500)
 

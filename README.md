@@ -64,6 +64,10 @@ uvicorn backend.main:app --reload  # API, docs at http://127.0.0.1:8000/docs
 The trained model (`ml/classifier/weights/best.pt`) is included. The MiniLM text model downloads on
 first use.
 
+**Security.** The API has no user accounts. Before exposing it beyond `127.0.0.1`, set `MM_API_KEY`;
+`POST /listings` and `POST /feedback` then require the header `X-API-Key: <key>`. Uploads are limited
+to 10 MB per photo and 80 megapixels, and only real JPG, PNG, WEBP or HEIC photos are stored.
+
 ## Project layout
 
 ```

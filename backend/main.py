@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.routes import classify, feedback, listings, match
+from backend.security import LimitsMiddleware
 from ml.carbon import DISCLAIMER
 
 app = FastAPI(
@@ -25,6 +26,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+app.add_middleware(LimitsMiddleware)  # added last = runs first: size limit before anything reads the body
 app.include_router(listings.router)
 app.include_router(match.router)
 app.include_router(classify.router)

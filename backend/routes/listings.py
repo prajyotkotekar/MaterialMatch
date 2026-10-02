@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend import db
 from backend.schemas import Listing, ListingIn, Quality, WasteType
+from backend.security import require_api_key
 
 router = APIRouter(prefix="/listings", tags=["listings"])
 
@@ -29,6 +30,9 @@ def get_listing(waste_id: int):
     return row
 
 
-@router.post("", response_model=Listing, status_code=201)
+@router.post("", response_model=Listing, status_code=201, dependencies=[Depends(require_api_key)])
 def create_listing(body: ListingIn):
-    return db.add_listing(body.model_dump())
+    try:
+        return db.add_listing(body.model_dump())
+    except OverflowError as exc:
+        raise HTTPException(507, str(exc)) from exc
