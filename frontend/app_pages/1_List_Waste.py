@@ -7,7 +7,7 @@ import streamlit as st
 import visuals as vz
 from backend import feedback_store
 from common import (ALL_WASTE_TYPES, CO2E_EXPLAINER, SESSION_ID_START, carbon_label,
-                    classify_bytes, fmt_kg, get_classifier, kpi, quality_label, recycler_card, results_map,
+                    classify_bytes, fmt_kg, get_classifier, kpi, md_text, quality_label, recycler_card, results_map,
                     section_title, recycler_profiles, step_title, sub_label, waste_label,
                     zone_coords, zones)
 from ml.embeddings import load_listings
@@ -302,7 +302,7 @@ with ident_col:
         else:
             for n, (item, files) in enumerate(groups, 1):
                 with st.container(gap="xsmall"):
-                    st.caption(f"Item {n}: {files[0].name}")
+                    st.caption(f"Item {n}: {md_text(files[0].name)}")
                     prediction_block(item_sigs[item], item_preds.get(item), item_errors.get(item), None,
                                      reveal=item_sigs[item] in fresh, size="sm")
 

@@ -1,5 +1,15 @@
 [client]
 toolbarMode = "minimal"
+# Errors show their type only, never a traceback with file paths
+showErrorDetails = "type"
+
+[server]
+# Same 10 MB per photo as the API (Streamlit's default is 200 MB)
+maxUploadSize = 10
+
+[browser]
+# No usage statistics sent to Streamlit
+gatherUsageStats = false
 
 # One identity: true black with an off-white result card, so there is no separate light variant.
 [theme]

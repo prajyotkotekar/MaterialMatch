@@ -350,6 +350,11 @@ def listing_carbon_text(r: dict, need_kg: float = 0) -> str:
     return f":material/eco: {per_kg:.2f} kg CO₂e saved per kg ({label})"
 
 
+def md_text(text) -> str:
+    """User-typed text shown literally in st.markdown: no links, emphasis or headings can be injected."""
+    return "".join("\\" + c if c in "\\`*_{}[]()<>#+-.!|~:$&" else c for c in str(text))
+
+
 def seller_display(name: str) -> str:
     """'Factory_173' -> 'Factory 173' (the synthetic seller names come from ids)."""
     return " ".join(str(name).replace("_", " ").split()) or "Seller"
@@ -422,25 +427,26 @@ def listing_dialog(r: dict, need_kg: float = 0) -> None:
         st.markdown(type_tag(r["waste_type"]) + quality_tag(r["quality"]) + " " + source_badge(r),
                     unsafe_allow_html=True)
     if r.get("description"):
-        st.write(r["description"])
+        st.markdown(md_text(r["description"]))
 
+    # seller, phone, pickup and description can be typed by the user who published the listing
     c1, c2 = st.columns(2, gap="medium")
     with c1:
-        st.markdown(f":material/storefront: **Seller**  \n{seller}")
-        st.markdown(f":material/call: **Phone**  \n{r.get('seller_contact') or 'Not listed'}")
+        st.markdown(f":material/storefront: **Seller**  \n{md_text(seller)}")
+        st.markdown(f":material/call: **Phone**  \n{md_text(r.get('seller_contact') or 'Not listed')}")
         if email:
-            st.markdown(f":material/mail: **Email**  \n{email}")
+            st.markdown(f":material/mail: **Email**  \n{md_text(email)}")
         pickup = r.get("pickup_location") or r["location_name"]
-        address = f"  \n{r['pickup_address']}" if r.get("pickup_address") else ""
-        st.markdown(f":material/location_on: **Pickup / drop-off**  \n{pickup}{address}")
+        address = f"  \n{md_text(r['pickup_address'])}" if r.get("pickup_address") else ""
+        st.markdown(f":material/location_on: **Pickup / drop-off**  \n{md_text(pickup)}{address}")
     with c2:
         st.markdown(f":material/scale: **Available**  \n{r['quantity_kg']:,} kg")
         st.markdown(f":material/sell: **Price**  \n{price_text(r, need_kg)}")
         if r.get("distance_km") is not None:
             st.markdown(f":material/near_me: **Distance**  \n{r['distance_km']:.1f} km from your location "
-                        f"({r['location_name']})")
+                        f"({md_text(r['location_name'])})")
         else:
-            st.markdown(f":material/near_me: **Location**  \n{r['location_name']}")
+            st.markdown(f":material/near_me: **Location**  \n{md_text(r['location_name'])}")
         st.markdown(":material/eco: **CO₂e**  \n" + listing_carbon_text(r, need_kg).replace(":material/eco: ", "", 1))
 
     with st.container(border=True, gap="small"):
@@ -484,9 +490,11 @@ def results_map(origin: tuple[float, float], points: list[dict], height: int = 3
     def rgb(hex_: str, a: int) -> list[int]:
         return [int(hex_[i:i + 2], 16) for i in (1, 3, 5)] + [a]
 
-    rows = [{"lat": origin[0], "lon": origin[1], "name": origin_label, "detail": "", "fill": rgb("#F2C200", 255),
-             "line": rgb("#1C2529", 255), "r": 300}]
-    rows += [{**p, "fill": rgb(material_color(p.get("waste_type")), 240 if i == 0 else 190),
+    # the tooltip is an HTML template, and names can be typed by users (published listings), so escape them
+    rows = [{"lat": origin[0], "lon": origin[1], "name": html.escape(origin_label), "detail": "",
+             "fill": rgb("#F2C200", 255), "line": rgb("#1C2529", 255), "r": 300}]
+    rows += [{**p, "name": html.escape(str(p.get("name", ""))), "detail": html.escape(str(p.get("detail", ""))),
+              "fill": rgb(material_color(p.get("waste_type")), 240 if i == 0 else 190),
               "line": [255, 255, 255, 230], "r": 320 if i == 0 else 200}
              for i, p in enumerate(points)]
     lats = [r["lat"] for r in rows]
