@@ -16,7 +16,7 @@ from PIL import Image
 from common import WASTE_COLOR, material_color, sub_label, waste_label
 from ml import taxonomy
 from ml.carbon import co2e_saved
-from ml.classifier.predict import SMALL_SIDE
+from ml.classifier.predict import SMALL_SIDE, check_pixels
 from ml.matcher import load_recyclers
 
 MODEL_INPUT = 224  # the classifier sees 224 x 224 px
@@ -82,7 +82,9 @@ def image_info(data: bytes) -> dict | None:
 @st.cache_data(max_entries=64, show_spinner=False)
 def thumb_uri(data: bytes, side: int = 480) -> str:
     try:
-        im = Image.open(io.BytesIO(data)).convert("RGB")
+        im = Image.open(io.BytesIO(data))
+        check_pixels(im)
+        im = im.convert("RGB")
         im.thumbnail((side, side))
         buf = io.BytesIO()
         im.save(buf, "JPEG", quality=82)

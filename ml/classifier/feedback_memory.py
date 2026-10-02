@@ -69,9 +69,11 @@ def records() -> list[dict]:
     latest: dict[str, dict] = {}
     with open(log, encoding="utf-8") as f:
         for line in f:
-            if line.strip():
+            try:
                 r = json.loads(line)
-                latest[r["item_key"]] = r
+            except ValueError:  # blank or half-written line
+                continue
+            latest[r["item_key"]] = r
     out = []
     for r in latest.values():
         if cutoff and r["created_at"] < cutoff:

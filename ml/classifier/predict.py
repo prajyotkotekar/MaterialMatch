@@ -51,7 +51,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import numpy as np
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageOps
 
 try:
     from ml.classifier import feedback_memory
@@ -128,6 +128,15 @@ def is_hierarchical(model) -> bool:
     return any(SEP in n for n in model.names.values())
 
 
+MAX_PIXELS = 80_000_000  # larger than any phone photo; a bigger image is refused before it is decoded
+
+
+def check_pixels(img: Image.Image) -> None:
+    """Refuse decompression bombs: a tiny compressed file that would decode to gigabytes."""
+    if img.width * img.height > MAX_PIXELS:
+        raise ValueError(f"Image too large ({img.width}x{img.height} pixels)")
+
+
 def _to_pil(image: Any) -> Image.Image:
     """Accept a path, raw bytes, file-like object, PIL image or RGB numpy array."""
     try:
@@ -155,9 +164,12 @@ def _to_pil(image: Any) -> Image.Image:
             img = Image.fromarray(arr[..., :3])
         else:
             raise TypeError(f"Unsupported image type: {type(image).__name__}")
+        check_pixels(img)  # header only, nothing decoded yet
         img = ImageOps.exif_transpose(img)
         return img.convert("RGB")
-    except UnidentifiedImageError as exc:
+    except FileNotFoundError:
+        raise
+    except (OSError, SyntaxError, Image.DecompressionBombError) as exc:  # truncated or corrupt file
         raise ValueError(f"Could not decode image: {exc}") from exc
 
 

@@ -34,6 +34,8 @@ from ml.taxonomy import UNKNOWN, WASTE_TYPES, photo_hierarchy  # noqa: E402
 
 OTHER = "other"  # a material the model has no class for (e.g. rubber, ceramics)
 MODES = ("single", "same_item", "different_items")
+IMAGE_FORMATS = {"JPEG": "jpg", "MPO": "jpg", "PNG": "png", "WEBP": "webp", "HEIF": "heic"}
+MAX_PIXELS = 80_000_000  # same limit as the classifier
 
 _lock = threading.Lock()
 
@@ -43,13 +45,22 @@ def _weights_id() -> str | None:
     return hashlib.sha256(WEIGHTS.read_bytes()).hexdigest()[:12] if WEIGHTS.exists() else None
 
 
-def _save_image(data: bytes) -> tuple[str, str]:
-    sha = hashlib.sha256(data).hexdigest()
+def _image_ext(data: bytes) -> str:
+    """File extension of a valid photo; anything else (scripts, archives, corrupt files) is refused."""
     try:
-        fmt = (Image.open(io.BytesIO(data)).format or "bin").lower()
-    except Exception:
-        fmt = "bin"
-    path = IMAGE_DIR / f"{sha}.{'jpg' if fmt == 'jpeg' else fmt}"
+        with Image.open(io.BytesIO(data)) as im:
+            fmt, pixels = im.format, im.width * im.height
+            im.verify()
+    except Exception as exc:
+        raise ValueError("Every file must be a JPG, PNG, WEBP or HEIC photo") from exc
+    if fmt not in IMAGE_FORMATS or pixels > MAX_PIXELS:
+        raise ValueError("Every file must be a JPG, PNG, WEBP or HEIC photo of at most 80 megapixels")
+    return IMAGE_FORMATS[fmt]
+
+
+def _save_image(data: bytes, ext: str) -> tuple[str, str]:
+    sha = hashlib.sha256(data).hexdigest()
+    path = IMAGE_DIR / f"{sha}.{ext}"
     if not path.exists():
         path.write_bytes(data)
     try:
@@ -72,6 +83,12 @@ def save_feedback(images: list[bytes], predicted_label: str, predicted_confidenc
         raise ValueError("At least one image is required")
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}")
+    if predicted_label not in (*WASTE_TYPES, UNKNOWN):
+        raise ValueError(f"predicted_label must be one of {(*WASTE_TYPES, UNKNOWN)}")
+    known_subs = {s for subs in photo_hierarchy().values() for s in subs}
+    if predicted_sub_type not in (None, "", UNKNOWN, *known_subs):
+        raise ValueError("predicted_sub_type is not a sub-type the model knows")
+    exts = [_image_ext(b) for b in images]
     if is_correct and predicted_label == UNKNOWN:  # "not a supported material" was right
         actual = OTHER
     else:
@@ -87,7 +104,7 @@ def save_feedback(images: list[bytes], predicted_label: str, predicted_confidenc
 
     with _lock:
         IMAGE_DIR.mkdir(parents=True, exist_ok=True)
-        saved = [_save_image(b) for b in images]
+        saved = [_save_image(b, ext) for b, ext in zip(images, exts)]
         record = {
             "id": uuid.uuid4().hex,
             "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -117,8 +134,13 @@ def save_feedback(images: list[bytes], predicted_label: str, predicted_confidenc
 def load_feedback(latest_only: bool = True) -> list[dict]:
     if not LOG_PATH.exists():
         return []
+    rows = []
     with _lock, open(LOG_PATH, encoding="utf-8") as f:
-        rows = [json.loads(line) for line in f if line.strip()]
+        for line in f:
+            try:
+                rows.append(json.loads(line))
+            except ValueError:  # blank or half-written line: skip it rather than break every reader
+                continue
     if latest_only:
         rows = list({r["item_key"]: r for r in rows}.values())
     return rows
