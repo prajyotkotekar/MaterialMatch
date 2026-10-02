@@ -1,7 +1,7 @@
 """
 ml/embeddings.py - Text embeddings for waste listings (sentence-transformers).
 
-    python -m ml.embeddings      # precompute -> data/processed/listings_with_embeddings.pkl
+    python -m ml.embeddings      # precompute -> data/processed/listings_with_embeddings.npz
 
 At runtime the cache is used if it exists and matches the current listings; otherwise
 embeddings are computed in memory. If the model can't be loaded (e.g. offline), a TF-IDF
@@ -11,7 +11,6 @@ backend is used instead so search still works.
 from __future__ import annotations
 
 import hashlib
-import pickle
 from functools import lru_cache
 from pathlib import Path
 
@@ -20,7 +19,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 LISTINGS_CSV = ROOT / "data" / "raw" / "waste_listings.csv"
-CACHE_PKL = ROOT / "data" / "processed" / "listings_with_embeddings.pkl"
+CACHE_NPZ = ROOT / "data" / "processed" / "listings_with_embeddings.npz"  # plain arrays, never pickle
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
@@ -94,12 +93,11 @@ class ListingIndex:
 
     @staticmethod
     def _cached(texts: list[str]):
-        if not CACHE_PKL.exists():
+        if not CACHE_NPZ.exists():
             return None
-        with open(CACHE_PKL, "rb") as f:
-            blob = pickle.load(f)
-        if blob.get("model") == EMBED_MODEL and blob.get("texts_hash") == _texts_hash(texts):
-            return blob["embeddings"]
+        with np.load(CACHE_NPZ, allow_pickle=False) as z:
+            if str(z["model"]) == EMBED_MODEL and str(z["texts_hash"]) == _texts_hash(texts):
+                return z["embeddings"]
         return None
 
     def similarity(self, query: str) -> np.ndarray:
@@ -132,12 +130,10 @@ def _listing_index(_version: int) -> ListingIndex:
 def build_cache() -> Path:
     df = load_listings()
     texts = [listing_text(r) for _, r in df.iterrows()]
-    CACHE_PKL.parent.mkdir(parents=True, exist_ok=True)
-    with open(CACHE_PKL, "wb") as f:
-        pickle.dump({"model": EMBED_MODEL, "texts_hash": _texts_hash(texts),
-                     "waste_ids": df["waste_id"].tolist(), "texts": texts,
-                     "embeddings": embed(texts)}, f)
-    return CACHE_PKL
+    CACHE_NPZ.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(CACHE_NPZ, model=np.array(EMBED_MODEL), texts_hash=np.array(_texts_hash(texts)),
+             waste_ids=df["waste_id"].to_numpy(), texts=np.array(texts), embeddings=embed(texts))
+    return CACHE_NPZ
 
 
 if __name__ == "__main__":
