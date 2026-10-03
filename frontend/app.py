@@ -35,12 +35,22 @@ def _reload_changed(names: tuple[str, ...]) -> None:
 
 _reload_changed(("common", "visuals"))  # order matters: visuals imports from common
 
+from backend import feedback_store  # noqa: E402
 from common import inject_css  # noqa: E402
 from ml.carbon import DISCLAIMER  # noqa: E402
 
 st.set_page_config(page_title="MaterialMatch", page_icon=str(HERE / "assets" / "mark.svg"), layout="wide")
 inject_css()
 st.logo(str(HERE / "assets" / "logo.svg"), size="large")
+
+
+@st.cache_resource(show_spinner="Restoring saved feedback...")
+def _restore_feedback() -> int:
+    """Once per server process, before any prediction reads the feedback memory (see backend/feedback_sync.py)."""
+    return feedback_store.restore()
+
+
+_restore_feedback()
 
 if "my_listings" not in st.session_state:
     st.session_state.my_listings = []

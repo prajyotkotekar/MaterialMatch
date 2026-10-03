@@ -12,6 +12,7 @@ numpy==2.4.6
 pandas==3.0.6
 scikit-learn==1.9.1
 sentence-transformers==6.1.0
+huggingface-hub==1.33.0   # also used directly: optional feedback sync (backend/feedback_sync.py)
 streamlit==1.64.0
 fastapi==0.141.1
 uvicorn==0.54.0

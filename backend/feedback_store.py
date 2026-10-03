@@ -7,6 +7,8 @@ real uploads and retrained. Nothing here retrains the model.
 
     data/feedback/classifier_feedback.jsonl
     data/feedback/images/<sha256>.<ext>
+
+On hosts with a temporary disk, feedback_sync.py mirrors this folder to a private Hugging Face dataset.
 """
 
 from __future__ import annotations
@@ -30,6 +32,7 @@ LOG_PATH = FEEDBACK_DIR / "classifier_feedback.jsonl"
 IMAGE_DIR = FEEDBACK_DIR / "images"
 WEIGHTS = ROOT / "ml" / "classifier" / "weights" / "best.pt"
 
+from backend import feedback_sync  # noqa: E402
 from ml.taxonomy import UNKNOWN, WASTE_TYPES, photo_hierarchy  # noqa: E402
 
 OTHER = "other"  # a material the model has no class for (e.g. rubber, ceramics)
@@ -128,7 +131,13 @@ def save_feedback(images: list[bytes], predicted_label: str, predicted_confidenc
         }
         with open(LOG_PATH, "a", encoding="utf-8") as f:
             f.write(json.dumps(record) + "\n")
+    feedback_sync.push(LOG_PATH, [IMAGE_DIR / Path(p).name for p in record["image_files"]])
     return record
+
+
+def restore() -> int:
+    """Bring back the feedback saved remotely before this disk was wiped (no-op unless sync is configured)."""
+    return feedback_sync.restore(LOG_PATH)
 
 
 def load_feedback(latest_only: bool = True) -> list[dict]:

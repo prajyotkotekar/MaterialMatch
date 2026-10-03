@@ -40,6 +40,7 @@ flowchart LR
     ML --> CSV[(data/raw CSVs<br/>listings, recyclers, factors)]
     FE --> FB[(data/feedback<br/>user corrections)]
     BE --> FB
+    FB -. optional sync .-> HF[(Private Hugging Face<br/>dataset)]
 
     subgraph Training[Offline training]
         DS[Image datasets] --> TR[train_yolo.py] --> W[weights/best.pt]
@@ -55,7 +56,7 @@ Requires Python 3.11.
 ```bash
 python -m venv .venv
 .venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt    # CPU PyTorch index is set inside the file
 
 streamlit run frontend/app.py      # web app
 uvicorn backend.main:app --reload  # API, docs at http://127.0.0.1:8000/docs
@@ -68,13 +69,20 @@ first use.
 `POST /listings` and `POST /feedback` then require the header `X-API-Key: <key>`. Uploads are limited
 to 10 MB per photo and 80 megapixels, and only real JPG, PNG, WEBP or HEIC photos are stored.
 
+**Deploying (Streamlit Community Cloud).** Main file `frontend/app.py`, Python 3.11. The host wipes its
+disk on every reboot, so to keep user feedback (and the feedback memory) add two secrets:
+`HF_TOKEN` (a Hugging Face write token) and `MM_FEEDBACK_REPO = "<hf-user>/materialmatch-feedback"`.
+`data/feedback/` is then restored at startup and every answer is uploaded to that dataset, which is
+created private; a public repo is refused. Without the secrets feedback stays on the local disk.
+
 ## Project layout
 
 ```
 frontend/   Streamlit pages (I have waste, I need feedstock, Impact) and visuals.py
 backend/    FastAPI routes: listings, match, classify, feedback
 ml/         taxonomy, carbon, embeddings, matcher, evaluation
-ml/classifier/   dataset build, training, prediction, unknown detection, feedback learning, evaluation
+ml/classifier/   prediction, unknown detection, feedback memory, shipped weights
+ml/classifier/tools/   dataset build, training, calibration, evaluation (dev only)
 data/raw/   synthetic listings, sample recyclers, carbon factors
 ```
 
@@ -93,8 +101,8 @@ Unfamiliar photos are flagged as "Please confirm" or "Other / unknown", and ever
 confirmed by the user before publishing. Bales and bulk loads (for example textile bales) are still
 the weakest case.
 
-Retrain: `python ml/classifier/train_yolo.py --auto` (CPU) or
-`python -m ml.classifier.kaggle_runner train` (Kaggle GPU, needs your own Kaggle API token).
+Retrain (`pip install -r requirements-dev.txt`): `python ml/classifier/tools/train_yolo.py --auto` (CPU)
+or `python -m ml.classifier.tools.kaggle_runner train` (Kaggle GPU, needs your own Kaggle API token).
 
 ## Datasets and licences
 

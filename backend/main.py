@@ -10,9 +10,12 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend import feedback_store
 from backend.routes import classify, feedback, listings, match
 from backend.security import LimitsMiddleware
 from ml.carbon import DISCLAIMER
+
+feedback_store.restore()  # no-op unless feedback sync is configured (backend/feedback_sync.py)
 
 app = FastAPI(
     title="MaterialMatch API",
