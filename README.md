@@ -4,6 +4,8 @@ AI waste-to-feedstock matching for Bengaluru. A waste generator uploads a photo,
 the material, and the app suggests nearby recyclers and estimates the CO₂e saved by recycling it.
 Manufacturers can search listed waste in plain words.
 
+**[Live demo](https://materialmatch.streamlit.app/)**
+
 > **Demo data.** All 205 waste listings and the 10 recycler profiles are synthetic samples, not real
 > businesses or partnerships. Most carbon factors are proxies (EPA WARM) and are flagged in the app.
 
