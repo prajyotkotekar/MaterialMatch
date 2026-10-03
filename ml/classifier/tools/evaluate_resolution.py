@@ -1,7 +1,7 @@
 """
 evaluate_resolution.py - Does the model depend on photo resolution? (the "small photo = e-waste" bias)
 
-    python -m ml.classifier.evaluate_resolution --weights ml/classifier/weights/best.pt [more.pt ...]
+    python -m ml.classifier.tools.evaluate_resolution --weights ml/classifier/weights/best.pt [more.pt ...]
 
 Takes a fixed sample of the TEST split (--per-class images per sub-type, seed 0), shrinks every image
 so its short side is 150 / 100 / 70 px (bilinear, like a small web or chat photo) and reports per
@@ -22,10 +22,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from ml.classifier.calibrate_ood import type_probs
+from ml.classifier.tools.calibrate_ood import type_probs
 from ml.classifier.predict import embed_probs, split_leaf
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 DATASET = ROOT / "data" / "processed" / "cls_dataset"
 OUT = ROOT / "ml" / "classifier" / "reports" / "resolution"
 SIZES = (None, 150, 100, 70)                  # None = original size

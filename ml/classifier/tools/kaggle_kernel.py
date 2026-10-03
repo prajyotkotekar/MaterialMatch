@@ -1,7 +1,7 @@
 """
 kaggle_kernel.py - The script that runs ON Kaggle's GPU. Do not run it locally.
 
-ml/classifier/kaggle_runner.py fills in CONFIG_B64 (job settings) and PAYLOAD_B64 (a zip of the
+ml/classifier/tools/kaggle_runner.py fills in CONFIG_B64 (job settings) and PAYLOAD_B64 (a zip of the
 project's ml/ code + class_mapping.csv), pushes it as a private Kaggle script, and downloads what
 this script writes to /kaggle/working:
 
@@ -121,7 +121,7 @@ def main():
 
     if CONFIG["job"] == "train":
         (OUT / "weights").mkdir(exist_ok=True)
-        rc = run("train", [PY, "-m", "ml.classifier.train_yolo", "--dataset", dataset, "--device", "0",
+        rc = run("train", [PY, "-m", "ml.classifier.tools.train_yolo", "--dataset", dataset, "--device", "0",
                            "--epochs", a["epochs"], "--patience", a["patience"], "--batch", a["batch"],
                            "--workers", a["workers"], "--imgsz", a["imgsz"], "--lr0", a["lr0"],
                            "--optimizer", a["optimizer"], "--warmup-epochs", a["warmup_epochs"],
@@ -135,7 +135,7 @@ def main():
                            "--weights-dir", OUT / "weights", "--weights-name", "best_candidate.pt"])
         if rc != 0:
             fail(f"training exited with {rc}")
-        if run("calibrate", [PY, "-m", "ml.classifier.calibrate_ood", "--weights",
+        if run("calibrate", [PY, "-m", "ml.classifier.tools.calibrate_ood", "--weights",
                              OUT / "weights" / "best_candidate.pt", "--dataset", dataset]) != 0:
             fail("calibration failed")
 
@@ -146,7 +146,7 @@ def main():
                  "(the new dataset version was not ready yet); rerun")
         overlay = unpack(in_root, "inputs.zip", "classifier_feedback.jsonl", "/tmp/mm_inputs").parents[1]
         shutil.copytree(overlay, ROOT, dirs_exist_ok=True)
-        rc = run("retrain_with_feedback", [PY, "-m", "ml.classifier.retrain_with_feedback", "--confirm",
+        rc = run("retrain_with_feedback", [PY, "-m", "ml.classifier.tools.retrain_with_feedback", "--confirm",
                                            "--device", "0", *a["retrain_args"]])
         info["gate_passed"] = rc == 0
         w = ROOT / "ml" / "classifier" / "weights" / "feedback_candidate.pt"
@@ -157,7 +157,7 @@ def main():
             shutil.copytree(rep, OUT / "reports" / rep.name, dirs_exist_ok=True)
         if rc not in (0, 3):                        # 3 = trained fine but the test gate failed
             fail(f"retrain_with_feedback exited with {rc}")
-        if rc == 0 and run("calibrate", [PY, "-m", "ml.classifier.calibrate_ood", "--weights",
+        if rc == 0 and run("calibrate", [PY, "-m", "ml.classifier.tools.calibrate_ood", "--weights",
                                          OUT / "weights" / w.name, "--dataset", dataset]) != 0:
             fail("calibration failed")
     elif CONFIG["job"] == "eval":
@@ -168,10 +168,10 @@ def main():
         shutil.copytree(overlay, ROOT, dirs_exist_ok=True)
         w = ROOT / "ml" / "classifier" / "weights"
         for stem in a["weights"]:
-            if run(f"evaluate {stem}", [PY, "-m", "ml.classifier.evaluate_classifier", "--weights", w / f"{stem}.pt",
+            if run(f"evaluate {stem}", [PY, "-m", "ml.classifier.tools.evaluate_classifier", "--weights", w / f"{stem}.pt",
                                         "--skip-old", "--dataset", dataset, "--out", OUT / "reports" / f"eval_{stem}"]):
                 fail(f"evaluate_classifier failed for {stem}")
-        if run("real photos", [PY, "-m", "ml.classifier.evaluate_real_photos", "--weights", w / "best.pt",
+        if run("real photos", [PY, "-m", "ml.classifier.tools.evaluate_real_photos", "--weights", w / "best.pt",
                                *[w / f"{s}.pt" for s in a["weights"]]]) == 0:
             shutil.copytree(ROOT / "ml" / "classifier" / "reports" / "real_photos", OUT / "reports" / "real_photos",
                             dirs_exist_ok=True)

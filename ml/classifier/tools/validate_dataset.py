@@ -1,7 +1,7 @@
 """
 validate_dataset.py - Independent leakage / integrity check of a built classification dataset.
 
-    python ml/classifier/validate_dataset.py [--dataset data/processed/cls_dataset]
+    python ml/classifier/tools/validate_dataset.py [--dataset data/processed/cls_dataset]
 
 Checks the OUTPUT folders (including CODD crops): every split has the same classes, class
 names parse as <waste_type>__<sub_type> and exist in class_mapping.csv, no file name is reused
@@ -24,7 +24,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from audit_datasets import duplicate_pairs, image_features  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def feat(p: Path):

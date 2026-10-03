@@ -1,7 +1,10 @@
-﻿# Python 3.11. CPU-only torch (no NVIDIA GPU on the dev machine):
-#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.14.0
-torchvision==0.29.0
+# Runtime dependencies for the Streamlit app and the FastAPI backend (Python 3.11).
+# The +cpu builds keep the install small enough for cloud hosting; they also match the dev
+# machine, which has no NVIDIA GPU. Training-only tools live in requirements-dev.txt.
+#   pip install -r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu
+torchvision==0.29.0+cpu
 ultralytics==8.4.164
 pillow==12.3.0
 pi-heif==1.4.0            # ultralytics pip-installs this at first predict if missing; also enables HEIC photos
@@ -13,4 +16,3 @@ streamlit==1.64.0
 fastapi==0.141.1
 uvicorn==0.54.0
 python-multipart==0.0.32
-kaggle==2.2.4             # optional: GPU training on Kaggle (ml/classifier/kaggle_runner.py)

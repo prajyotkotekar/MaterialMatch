@@ -1,8 +1,8 @@
 """
 evaluate_real_photos.py - Compare models on REAL user photos (the feedback log), not dataset images.
 
-    python -m ml.classifier.evaluate_real_photos
-    python -m ml.classifier.evaluate_real_photos --weights ml/classifier/weights/best.pt other.pt ...
+    python -m ml.classifier.tools.evaluate_real_photos
+    python -m ml.classifier.tools.evaluate_real_photos --weights ml/classifier/weights/best.pt other.pt ...
 
 Uses the latest answer per photo set in data/feedback/classifier_feedback.jsonl whose actual waste
 type is one of the model's types (so "other" answers are skipped). Predictions are the RAW model
@@ -25,10 +25,10 @@ import math
 from datetime import datetime
 from pathlib import Path
 
-from ml.classifier.calibrate_ood import type_probs
+from ml.classifier.tools.calibrate_ood import type_probs
 from ml.classifier.predict import embed_probs, load_model, split_leaf
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 W = ROOT / "ml" / "classifier" / "weights"
 OUT = ROOT / "ml" / "classifier" / "reports" / "real_photos"
 

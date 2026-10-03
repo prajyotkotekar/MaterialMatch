@@ -90,7 +90,7 @@ def load_model(weights: str | Path | None = None):
         if not path.exists():
             raise FileNotFoundError(
                 f"Model weights not found at {path}. Train first with:\n"
-                "  python ml/classifier/train_yolo.py --auto")
+                "  python ml/classifier/tools/train_yolo.py --auto")
         from ultralytics import YOLO
 
         model = YOLO(str(path))

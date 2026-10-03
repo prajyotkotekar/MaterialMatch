@@ -12,7 +12,7 @@ resized to max side 320 and saved as JPEG. Mapping: cardboard -> paper__cardboar
 soft_plastic -> plastic__plastic, metal -> metal__metal. Per-category caps keep the new domain from
 swamping the rest; leaves stay within the range of the existing oversampled train counts.
 
-    python -m ml.classifier.build_domain_dataset [--drop-frames leak.json]
+    python -m ml.classifier.tools.build_domain_dataset [--drop-frames leak.json]
 """
 from __future__ import annotations
 
@@ -25,9 +25,9 @@ from pathlib import Path
 
 from PIL import Image
 
-from ml.classifier.train_yolo import _link
+from ml.classifier.tools.train_yolo import _link
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 BASE = ROOT / "data" / "processed" / "cls_dataset"
 EXT = ROOT / "data" / "external_validation"
 OUT = ROOT / "data" / "processed" / "cls_dataset_zw"

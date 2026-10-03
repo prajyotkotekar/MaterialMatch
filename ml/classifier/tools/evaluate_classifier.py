@@ -1,7 +1,7 @@
 """
 evaluate_classifier.py - Full evaluation of the hierarchical classifier (+ comparison with v1).
 
-    python -m ml.classifier.evaluate_classifier --weights ml/classifier/weights/best_candidate.pt
+    python -m ml.classifier.tools.evaluate_classifier --weights ml/classifier/weights/best_candidate.pt
 
 Writes ml/classifier/reports/<name>/: report.md, metrics.json, confusion_type.csv/png,
 confusion_leaf.csv/png, confidence.png, per_image_test.csv.
@@ -32,10 +32,10 @@ import numpy as np
 from PIL import Image
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, roc_auc_score
 
-from ml.classifier.calibrate_ood import calibrate, list_split, type_probs
+from ml.classifier.tools.calibrate_ood import calibrate, list_split, type_probs
 from ml.classifier.predict import embed_probs, knn_distance, split_leaf
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 W = ROOT / "ml" / "classifier" / "weights"
 OLD_TYPES = ["construction", "e_waste", "plastic", "textile"]
 

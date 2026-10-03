@@ -1,7 +1,7 @@
 """
 calibrate_ood.py - Calibrate the "Other / unknown material" check for a trained classifier.
 
-    python -m ml.classifier.calibrate_ood --weights ml/classifier/weights/best_candidate.pt
+    python -m ml.classifier.tools.calibrate_ood --weights ml/classifier/weights/best_candidate.pt
 
 Writes <weights>.ood.npz, which predict.py loads automatically:
   bank            L2-normalised embeddings of up to --per-class TRAIN images per class (default 800)
@@ -31,7 +31,7 @@ import numpy as np
 
 from ml.classifier.predict import embed_probs, knn_distance, split_leaf
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def list_split(ds: Path, split: str, per_class: int | None = None, seed: int = 0):

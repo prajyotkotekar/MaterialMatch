@@ -1,9 +1,9 @@
 """
 retrain_with_feedback.py - Fold user feedback into the model (fine-tune + test gate + optional promote).
 
-    python -m ml.classifier.retrain_with_feedback                  # 1. review what would be used
-    python -m ml.classifier.retrain_with_feedback --confirm        # 2. fine-tune + compare (no promote)
-    python -m ml.classifier.retrain_with_feedback --confirm --promote   # 3. ... and replace best.pt if it passes
+    python -m ml.classifier.tools.retrain_with_feedback                  # 1. review what would be used
+    python -m ml.classifier.tools.retrain_with_feedback --confirm        # 2. fine-tune + compare (no promote)
+    python -m ml.classifier.tools.retrain_with_feedback --confirm --promote   # 3. ... and replace best.pt if it passes
 
 Uses the latest answer per photo set in data/feedback/classifier_feedback.jsonl whose waste type is
 one of the model's types and whose sub-type is known (given by the user, implied because the type
@@ -35,10 +35,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 
-from ml.classifier.calibrate_ood import calibrate, list_split, type_probs
+from ml.classifier.tools.calibrate_ood import calibrate, list_split, type_probs
 from ml.classifier.predict import SEP, embed_probs, load_model, split_leaf
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 W = ROOT / "ml" / "classifier" / "weights"
 FEEDBACK_LOG = ROOT / "data" / "feedback" / "classifier_feedback.jsonl"
 DATASET = ROOT / "data" / "processed" / "cls_dataset"

@@ -1,8 +1,8 @@
 """
 evaluate_external.py - independent external validation of the CURRENT classifier on an unseen dataset.
 
-    python -m ml.classifier.evaluate_external                       # data/external_validation -> reports/external_validation/
-    python -m ml.classifier.evaluate_external --limit 50            # smoke test (writes to a _smoke folder)
+    python -m ml.classifier.tools.evaluate_external                       # data/external_validation -> reports/external_validation/
+    python -m ml.classifier.tools.evaluate_external --limit 50            # smoke test (writes to a _smoke folder)
 
 EVALUATION ONLY: no training, no tuning, weights are only read (their sha256 is checked before and after),
 the dataset is only read, and nothing is added to any training set.
@@ -38,7 +38,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -692,7 +692,7 @@ def report(out: Path, data: Path, weights: Path, sha: str, audit: dict, crops: l
     w("- `external_validation_results_frames.csv`: one row per frame (secondary test)")
     w("- `metrics.json`, `dataset_audit.json`, `confusion_crops.png`, `confusion_frames.png`, "
       "`confidently_misclassified_examples.png`, `EXTERNAL_VALIDATION_CONCLUSION.md`")
-    w(f"\nReproduce: `python -m ml.classifier.evaluate_external` (reads `{data.relative_to(ROOT)}`, writes a new folder).")
+    w(f"\nReproduce: `python -m ml.classifier.tools.evaluate_external` (reads `{data.relative_to(ROOT)}`, writes a new folder).")
     (out / "EXTERNAL_VALIDATION_REPORT.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
     metrics = {"model": str(weights.relative_to(ROOT)), "weights_sha256": sha, "min_confidence": min_conf,

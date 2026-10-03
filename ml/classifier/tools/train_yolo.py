@@ -28,8 +28,8 @@ median train count are topped up by repeating their own train images (at most
 
 Examples
 --------
-python ml/classifier/train_yolo.py --auto --build-only
-python ml/classifier/train_yolo.py --dataset data/processed/cls_dataset --epochs 25 --patience 7 \
+python ml/classifier/tools/train_yolo.py --auto --build-only
+python ml/classifier/tools/train_yolo.py --dataset data/processed/cls_dataset --epochs 25 --patience 7 \
     --device cpu --workers 4 --batch 64
 (the new checkpoint is written to weights/best_candidate.pt; weights/best.pt is not touched)
 """
@@ -54,7 +54,7 @@ from pathlib import Path
 from PIL import Image, ImageOps
 
 try:
-    from ml.classifier.audit_datasets import duplicate_pairs, image_features
+    from ml.classifier.tools.audit_datasets import duplicate_pairs, image_features
 except ImportError:  # run as a script from ml/classifier
     from audit_datasets import duplicate_pairs, image_features
 
@@ -66,8 +66,9 @@ for _heif_mod in ("pi_heif", "pillow_heif"):
         pass
 
 HERE = Path(__file__).resolve().parent
-PROJECT_ROOT = HERE.parent.parent
-DEFAULT_WEIGHTS_DIR = HERE / "weights"
+CLASSIFIER_DIR = HERE.parent
+PROJECT_ROOT = HERE.parents[2]
+DEFAULT_WEIGHTS_DIR = CLASSIFIER_DIR / "weights"
 DEFAULT_DATASET_DIR = PROJECT_ROOT / "data" / "processed" / "cls_dataset"
 DEFAULT_MAPPING = PROJECT_ROOT / "data" / "processed" / "class_mapping.csv"
 DEFAULT_IMAGE_ROOT = PROJECT_ROOT / "data" / "Image"
@@ -615,7 +616,7 @@ def train(dataset_dir: Path, args) -> Path:
     if args.lr0 is not None:
         kw["lr0"] = args.lr0
     if args.robust_aug > 0:
-        from ml.classifier import robust_augment
+        from ml.classifier.tools import robust_augment
         robust_augment.install(args.robust_aug)
         print(f"Robust augmentation on: {robust_augment.RandomCorruption(args.robust_aug)}")
     if args.crop_scale is not None:
@@ -636,7 +637,7 @@ def train(dataset_dir: Path, args) -> Path:
     print("\n" + "=" * 60)
     print(f"Best checkpoint : {best}\nCopied to       : {dest}")
     print(f"Classes ({len(YOLO(str(dest)).names)}): {list(YOLO(str(dest)).names.values())}")
-    print("Evaluate with   : python -m ml.classifier.evaluate_classifier --weights", dest)
+    print("Evaluate with   : python -m ml.classifier.tools.evaluate_classifier --weights", dest)
     print("=" * 60)
     return dest
 
@@ -701,7 +702,7 @@ def main(argv=None):
     t.add_argument("--lowres-max-side", type=int, default=150)
     t.add_argument("--lowres-dir", default=None, help="where the derived dataset goes "
                                                       "(default data/processed/cls_dataset_lowres)")
-    t.add_argument("--project", default=str(HERE / "runs"))
+    t.add_argument("--project", default=str(CLASSIFIER_DIR / "runs"))
     t.add_argument("--name", default="materialmatch_hier")
     t.add_argument("--weights-dir", default=str(DEFAULT_WEIGHTS_DIR))
     t.add_argument("--weights-name", default="best_candidate.pt",

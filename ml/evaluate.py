@@ -90,7 +90,7 @@ def eval_classifier(batch: int = 64) -> dict:
                                for c in classes},
         "confusion_matrix": {t: dict(confusion[t]) for t in classes},
         "note": "waste-type accuracy uses the best guess even when the photo is flagged unknown; "
-                "full report: python -m ml.classifier.evaluate_classifier",
+                "full report: python -m ml.classifier.tools.evaluate_classifier",
     }
 
 

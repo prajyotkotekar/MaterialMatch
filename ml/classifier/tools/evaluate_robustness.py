@@ -14,7 +14,7 @@ false acceptance, precision of accepted, mean confidence when right / wrong, ECE
 --fit-check adds clean accuracy + loss on equal-size samples of the train, val and test splits
 (over/underfitting check: a large train >> val gap = overfitting; low train accuracy = underfitting).
 
-    python -m ml.classifier.evaluate_robustness --weights ml\\classifier\\weights\\best.pt other.pt [--fit-check]
+    python -m ml.classifier.tools.evaluate_robustness --weights ml\\classifier\\weights\\best.pt other.pt [--fit-check]
 """
 from __future__ import annotations
 
@@ -31,10 +31,10 @@ from PIL import Image
 
 os.environ.setdefault("MM_FEEDBACK_DIR", tempfile.mkdtemp(prefix="mm_nomemory_"))   # no memory blending
 
-from ml.classifier import robust_augment as ra  # noqa: E402
+from ml.classifier.tools import robust_augment as ra  # noqa: E402
 from ml.classifier.predict import SEP, predict_batch  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 DATASET = ROOT / "data" / "processed" / "cls_dataset"
 OUT = ROOT / "ml" / "classifier" / "reports" / "robustness"
 SEVERITY = 0.7

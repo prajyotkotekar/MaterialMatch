@@ -1,0 +1,5 @@
+# Extras for the scripts in ml/classifier/tools/ (dataset building, training, evaluation).
+# Not needed to run the app or the API.
+#   pip install -r requirements-dev.txt
+-r requirements.txt
+kaggle==2.2.4             # GPU training on Kaggle (ml/classifier/tools/kaggle_runner.py)

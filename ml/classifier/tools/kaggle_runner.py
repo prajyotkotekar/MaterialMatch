@@ -1,13 +1,13 @@
 """
 kaggle_runner.py - Run the heavy training jobs on Kaggle's free GPU instead of this laptop.
 
-    python -m ml.classifier.kaggle_runner check                  # API connection + weekly GPU quota
-    python -m ml.classifier.kaggle_runner upload-dataset         # data/processed/cls_dataset -> private Kaggle dataset
-    python -m ml.classifier.kaggle_runner train [--epochs 25]    # full training on the GPU, then OOD calibration
-    python -m ml.classifier.kaggle_runner train --tag lowres --lowres-fraction 0.35   # separate, parallel run
-    python -m ml.classifier.kaggle_runner feedback [--promote]   # retrain_with_feedback --confirm on the GPU
-    python -m ml.classifier.kaggle_runner status [train|feedback]
-    python -m ml.classifier.kaggle_runner fetch  train|feedback  # download results of the last run again
+    python -m ml.classifier.tools.kaggle_runner check                  # API connection + weekly GPU quota
+    python -m ml.classifier.tools.kaggle_runner upload-dataset         # data/processed/cls_dataset -> private Kaggle dataset
+    python -m ml.classifier.tools.kaggle_runner train [--epochs 25]    # full training on the GPU, then OOD calibration
+    python -m ml.classifier.tools.kaggle_runner train --tag lowres --lowres-fraction 0.35   # separate, parallel run
+    python -m ml.classifier.tools.kaggle_runner feedback [--promote]   # retrain_with_feedback --confirm on the GPU
+    python -m ml.classifier.tools.kaggle_runner status [train|feedback]
+    python -m ml.classifier.tools.kaggle_runner fetch  train|feedback  # download results of the last run again
 
 Needs the official Kaggle API token at %USERPROFILE%\\.kaggle\\kaggle.json (never inside the project,
 never committed). The account must be phone-verified for GPU + internet.
@@ -17,7 +17,7 @@ What goes to Kaggle (all PRIVATE):
     only when data/processed/cls_dataset changes; `train` does this automatically)
   * dataset <user>/materialmatch-feedback-inputs - `feedback` only: current best.pt + the feedback log
     and the user's feedback photos from data/feedback/
-  * kernels <user>/materialmatch-train, <user>/materialmatch-feedback - ml/classifier/kaggle_kernel.py
+  * kernels <user>/materialmatch-train, <user>/materialmatch-feedback - ml/classifier/tools/kaggle_kernel.py
     with the project's ml/ code embedded (no separate code upload)
 
 Results land in ml/classifier/kaggle_runs/<job>_<run_id>/ and the checkpoint is copied to
@@ -46,7 +46,7 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 W = ROOT / "ml" / "classifier" / "weights"
 DATASET = ROOT / "data" / "processed" / "cls_dataset"
 FEEDBACK_DIR = ROOT / "data" / "feedback"
@@ -172,7 +172,7 @@ def dataset_slug(folder: Path) -> str:
 def upload_dataset(force: bool = False, folder: Path = DATASET) -> dict:
     folder = Path(folder).resolve()
     if not (folder / "train").is_dir():
-        raise SystemExit(f"{folder} is missing - build it: python ml/classifier/train_yolo.py --auto --build-only")
+        raise SystemExit(f"{folder} is missing - build it: python ml/classifier/tools/train_yolo.py --auto --build-only")
     slug = dataset_slug(folder)
     ref = f"{username()}/{slug}"
     key = "dataset" if slug == DATASET_SLUG else f"dataset:{slug}"
@@ -322,7 +322,7 @@ def wait_and_fetch(job: str, run: dict, poll_s: int = 60, timeout_h: float = 11.
                 raise SystemExit(f"Kernel finished but run_info.json is not from run {run['run_id']}; "
                                  f"see {dest} and the Kaggle page.")
         if time.time() - t0 > timeout_h * 3600:
-            raise SystemExit("Timed out waiting; rerun later with: python -m ml.classifier.kaggle_runner "
+            raise SystemExit("Timed out waiting; rerun later with: python -m ml.classifier.tools.kaggle_runner "
                              f"fetch {job}")
         time.sleep(poll_s)
 
@@ -350,7 +350,7 @@ def install_train(dest: Path, run_id: str, name: str = "train") -> None:
         if f.exists():
             shutil.copy2(f, W / f"{stem}{suffix}")
     print(f"\nCandidate: {W / (stem + '.pt')} (best.pt untouched)\nNext:")
-    print(f"  python -m ml.classifier.evaluate_classifier --weights {W / (stem + '.pt')} --skip-old "
+    print(f"  python -m ml.classifier.tools.evaluate_classifier --weights {W / (stem + '.pt')} --skip-old "
           f"--out ml\\classifier\\reports\\kaggle_eval_{run_id}")
     print(f"  # read the report; to promote, copy {stem}.pt/.ood.npz/.hierarchy.json over best.*"
           " (back up best.* first), then restart Streamlit")
@@ -435,7 +435,7 @@ def cmd_train(a) -> int:
     run = start("train", args, [man["dataset"]], {"dataset_ref": man["dataset"],
                                                   "dataset_fingerprint": man["fingerprint"]}, a.accelerator, name)
     if a.no_wait:
-        print(f"Not waiting. Later: python -m ml.classifier.kaggle_runner fetch {name}")
+        print(f"Not waiting. Later: python -m ml.classifier.tools.kaggle_runner fetch {name}")
         return 0
     dest, info = wait_and_fetch(name, run)
     summarize(info, dest)
@@ -452,7 +452,7 @@ def cmd_feedback(a) -> int:
     run = start("feedback", {"retrain_args": [str(x) for x in retrain]}, [man["dataset"]],
                 {"dataset_ref": man["dataset"], "dataset_fingerprint": man["fingerprint"]}, a.accelerator)
     if a.no_wait:
-        print("Not waiting. Later: python -m ml.classifier.kaggle_runner fetch feedback [--promote]")
+        print("Not waiting. Later: python -m ml.classifier.tools.kaggle_runner fetch feedback [--promote]")
         return 0
     dest, info = wait_and_fetch("feedback", run)
     summarize(info, dest)
@@ -480,7 +480,7 @@ def cmd_eval(a) -> int:
     run = start("eval", {"weights": a.weights}, [man["dataset"]],
                 {"dataset_ref": man["dataset"], "dataset_fingerprint": man["fingerprint"]}, a.accelerator)
     if a.no_wait:
-        print("Not waiting. Later: python -m ml.classifier.kaggle_runner fetch eval")
+        print("Not waiting. Later: python -m ml.classifier.tools.kaggle_runner fetch eval")
         return 0
     dest, info = wait_and_fetch("eval", run)
     summarize(info, dest)

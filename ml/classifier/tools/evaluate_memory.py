@@ -1,7 +1,7 @@
 """
 evaluate_memory.py - Does the feedback memory help, and can it hurt? (simulation on held-out data)
 
-    python -m ml.classifier.evaluate_memory [--weights ml/classifier/weights/best.pt]
+    python -m ml.classifier.tools.evaluate_memory [--weights ml/classifier/weights/best.pt]
 
 Pretends users confirmed photos with their true labels and measures what the memory in
 predict.apply_memory does to OTHER photos:
@@ -20,9 +20,9 @@ from pathlib import Path
 import numpy as np
 
 from ml.classifier import predict as P
-from ml.classifier.calibrate_ood import list_split
+from ml.classifier.tools.calibrate_ood import list_split
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 CURVES = ("linear", "quadratic", "step")
 
 
