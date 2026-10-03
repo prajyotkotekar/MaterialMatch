@@ -83,6 +83,25 @@ h1 { line-height: 1.05 !important; }
 }
 [data-testid="stFileUploaderDropzone"]:hover { border-color: var(--mm-lime); background: var(--mm-raised); }
 
+/* photo tip: bubble pointing down at the dropzone, shown before the first upload */
+.mm-uptip { position: relative; display: grid; gap: 0.25rem; margin-bottom: 0.55rem; padding: 0.7rem 0.85rem 0.75rem 2.6rem;
+  background: var(--mm-bone); color: var(--mm-ink); border-radius: 3px; font-size: 0.8rem; line-height: 1.4;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); transform-origin: 50% 100%;
+  animation: mm-pop 0.35s cubic-bezier(.2, 1.4, .4, 1) both, mm-nudge 2.4s ease-in-out 0.6s 2; }
+.mm-uptip::before { content: "!"; position: absolute; left: 0.8rem; top: 0.72rem; width: 1.2rem; height: 1.2rem;
+  display: grid; place-items: center; border-radius: 50%; background: var(--mm-ink); color: var(--mm-lime);
+  font-size: 0.75rem; font-weight: 800; }
+.mm-uptip::after { content: ""; position: absolute; left: 55px; bottom: -7px; width: 14px; height: 14px;
+  background: var(--mm-bone); transform: rotate(45deg); }
+.mm-uptip b { font-size: 0.86rem; font-weight: 700; }
+.mm-uptip ul { margin: 0.15rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.1rem; }
+.mm-uptip li { position: relative; margin: 0; padding-left: 1.05rem; font-size: 0.8rem; line-height: 1.4; }
+.mm-uptip li::before { content: ""; position: absolute; left: 0.1rem; top: 0.32rem; width: 0.35rem; height: 0.6rem;
+  border: solid var(--mm-ink); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+@keyframes mm-pop { from { opacity: 0; transform: translateY(0.4rem) scale(0.94); } }
+@keyframes mm-nudge { 0%, 100% { transform: none; } 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .mm-uptip { animation: none; } }
+
 .mm-files { display: grid; gap: 0.5rem; }
 .mm-preview { position: relative; overflow: hidden; border: 1px solid var(--mm-line); border-radius: 3px; background: var(--mm-ground); }
 .mm-preview img { display: block; width: 100%; max-height: 22rem; object-fit: contain; }

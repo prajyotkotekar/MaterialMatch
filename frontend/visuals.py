@@ -107,6 +107,16 @@ def file_rows(files) -> str:
     return '<div class="mm-files">' + "".join(rows) + "</div>"
 
 
+def upload_tip_html() -> str:
+    """Callout above the dropzone, shown until a photo is uploaded."""
+    checks = ["Only the item you are listing, nothing in front of it",
+              "In focus and well lit",
+              "The item fills most of the frame"]
+    items = "".join(f"<li>{c}</li>" for c in checks)
+    return (f'<div class="mm-uptip" role="note"><b>Before you upload</b>'
+            f'<span>Use a clear photo of the item you are going to list.</span><ul>{items}</ul></div>')
+
+
 # ---------- hero ----------
 
 def _polar(deg: float, radius_pct: float) -> tuple[float, float]:

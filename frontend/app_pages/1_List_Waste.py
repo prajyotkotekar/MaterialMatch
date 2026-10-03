@@ -212,8 +212,11 @@ upload_col, ident_col = st.columns([5, 7], gap="medium")
 with upload_col:
     with st.container(border=True, key="card_upload", gap="small"):
         step_title(1, "Input", "optional")
+        tip_slot = st.empty()
         photos = st.file_uploader("Upload waste photos", type=["jpg", "jpeg", "png", "webp"],
                                   accept_multiple_files=True, key="photos", label_visibility="collapsed") or []
+        if not photos:
+            tip_slot.html(vz.upload_tip_html())
         if len(photos) > MAX_PHOTOS:
             st.caption(f":orange[:material/warning:] Using the first {MAX_PHOTOS} of {len(photos)} photos.")
             photos = photos[:MAX_PHOTOS]
