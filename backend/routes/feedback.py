@@ -36,6 +36,8 @@ async def post_feedback(
         return await run_in_threadpool(
             feedback_store.save_feedback, images, predicted_label, predicted_confidence,
             is_correct, actual_label, mode, None, "api", predicted_sub_type, actual_sub_type)
+    except OverflowError as exc:
+        raise HTTPException(507, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 

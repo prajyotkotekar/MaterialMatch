@@ -104,6 +104,7 @@ def save_feedback(sig: str) -> None:
         actual = ss.get(f"fbfix_{sig}")
         if actual is None:  # wait until the user picks the real material
             ss.pop(f"fbsaved_{sig}", None)
+            ss.pop(f"fbfull_{sig}", None)
             return
         actual_sub = ss.get(f"fbsub_{sig}")
         if actual_sub not in photo_hierarchy().get(actual, []):
@@ -111,10 +112,16 @@ def save_feedback(sig: str) -> None:
         if actual_sub is None and len(photo_hierarchy().get(actual, [])) == 1:
             actual_sub = photo_hierarchy()[actual][0]  # glass -> glass, metal -> metal, ...
         correct = actual == predicted and (actual_sub is None or actual_sub == predicted_sub)
-    rec = feedback_store.save_feedback(
-        info["images"], predicted, pred["confidence"], correct, actual, info["mode"],
-        probabilities=pred.get("top_k_subtypes") or pred["top_k"], source="streamlit",
-        predicted_sub_type=predicted_sub, actual_sub_type=actual_sub)
+    try:
+        rec = feedback_store.save_feedback(
+            info["images"], predicted, pred["confidence"], correct, actual, info["mode"],
+            probabilities=pred.get("top_k_subtypes") or pred["top_k"], source="streamlit",
+            predicted_sub_type=predicted_sub, actual_sub_type=actual_sub)
+    except OverflowError:
+        ss[f"fbfull_{sig}"] = True
+        ss.pop(f"fbsaved_{sig}", None)
+        return
+    ss.pop(f"fbfull_{sig}", None)
     ss[f"fbsaved_{sig}"] = rec["actual_label"]
     ss[f"fbsavedsub_{sig}"] = rec.get("actual_sub_type")
     if rec["actual_label"] in WASTE_TYPES:  # the confirmed/corrected material drives the form
@@ -167,6 +174,7 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
         st.caption("Was this prediction correct?")
         st.segmented_control("Was this prediction correct?", ["Yes", "No"], key=f"fb_{sig}",
                              on_change=save_feedback, args=(sig,), label_visibility="collapsed")
+    st.caption("Answering saves your answer and the photo to improve the model.")
     if ss.get(f"fb_{sig}") == "No":
         c1, c2 = st.columns(2, gap="small")
         c1.selectbox("Actual waste type", FEEDBACK_CHOICES, index=None, key=f"fbfix_{sig}",
@@ -177,7 +185,10 @@ def prediction_block(sig: str, pred: dict | None, error: str | None, per_photo: 
             c2.selectbox("Actual sub-type", subs, index=None, key=f"fbsub_{sig}", placeholder="Not sure",
                          format_func=sub_label, on_change=save_feedback, args=(sig,))
     saved = ss.get(f"fbsaved_{sig}")
-    if saved == feedback_store.OTHER:
+    if ss.get(f"fbfull_{sig}"):
+        st.caption(":orange[:material/info:] Feedback storage is full, so this answer was not saved. "
+                   "Set the material in the form yourself.")
+    elif saved == feedback_store.OTHER:
         st.caption(":material/info: Saved, thanks. MaterialMatch can't match this material yet: "
                    "remove the photo or pick the closest supported type.")
     elif saved:

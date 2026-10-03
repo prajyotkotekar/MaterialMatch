@@ -23,6 +23,7 @@ from pathlib import Path
 log = logging.getLogger(__name__)
 
 RETRY_SECONDS = 60
+MIN_COMMIT_SECONDS = 10  # answers arriving faster are batched into one commit (the Hub rate-limits commits)
 _lock = threading.Lock()
 _pending: set[Path] = set()
 _wake = threading.Event()
@@ -98,10 +99,11 @@ def flush(timeout: float = 30) -> bool:
 def _upload_loop(folder: Path) -> None:
     from huggingface_hub import CommitOperationAdd, HfApi
 
-    checked = False
+    checked, last_commit = False, 0.0
     while True:
         _wake.wait(RETRY_SECONDS)
         _wake.clear()
+        time.sleep(max(0.0, last_commit + MIN_COMMIT_SECONDS - time.monotonic()))
         cfg = _config()
         with _lock:
             batch = sorted(_pending) if cfg else []
@@ -119,6 +121,7 @@ def _upload_loop(folder: Path) -> None:
             # read now, so the log is a consistent snapshot even while new answers are appended
             ops = [CommitOperationAdd(path_in_repo=p.relative_to(folder).as_posix(), path_or_fileobj=p.read_bytes())
                    for p in batch if p.exists()]
+            last_commit = time.monotonic()
             api.create_commit(repo, repo_type="dataset", operations=ops,
                               commit_message=f"Add feedback ({len(ops)} files)")
         except Exception as exc:

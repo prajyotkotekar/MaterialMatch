@@ -73,7 +73,9 @@ to 10 MB per photo and 80 megapixels, and only real JPG, PNG, WEBP or HEIC photo
 disk on every reboot, so to keep user feedback (and the feedback memory) add two secrets:
 `HF_TOKEN` (a Hugging Face write token) and `MM_FEEDBACK_REPO = "<hf-user>/materialmatch-feedback"`.
 `data/feedback/` is then restored at startup and every answer is uploaded to that dataset, which is
-created private; a public repo is refused. Without the secrets feedback stays on the local disk.
+created private; a public repo is refused. Without the secrets feedback stays on the local disk. Stored
+feedback photos are capped at 1 GB (`MM_FEEDBACK_MAX_MB`), and users are told before answering that the photo
+is saved.
 
 ## Project layout
 

@@ -39,6 +39,8 @@ OTHER = "other"  # a material the model has no class for (e.g. rubber, ceramics)
 MODES = ("single", "same_item", "different_items")
 IMAGE_FORMATS = {"JPEG": "jpg", "MPO": "jpg", "PNG": "png", "WEBP": "webp", "HEIF": "heic"}
 MAX_PIXELS = 80_000_000  # same limit as the classifier
+# Anyone using a public deployment can add photos, and the synced copy is downloaded and embedded at every start.
+MAX_STORED_BYTES = int(os.environ.get("MM_FEEDBACK_MAX_MB") or 1024) * 1024 * 1024
 
 _lock = threading.Lock()
 
@@ -61,6 +63,10 @@ def _image_ext(data: bytes) -> str:
     return IMAGE_FORMATS[fmt]
 
 
+def _stored_bytes() -> int:
+    return sum(p.stat().st_size for p in IMAGE_DIR.iterdir() if p.is_file()) if IMAGE_DIR.exists() else 0
+
+
 def _save_image(data: bytes, ext: str) -> tuple[str, str]:
     sha = hashlib.sha256(data).hexdigest()
     path = IMAGE_DIR / f"{sha}.{ext}"
@@ -77,6 +83,7 @@ def save_feedback(images: list[bytes], predicted_label: str, predicted_confidenc
                   probabilities: list[dict] | None = None, source: str = "api",
                   predicted_sub_type: str | None = None, actual_sub_type: str | None = None) -> dict:
     """Store one answer to "Was this prediction correct?". Returns the stored record.
+    Raises ValueError for invalid input, OverflowError when the photo store is full (MAX_STORED_BYTES).
 
     is_correct refers to the whole prediction (waste type AND sub-type). When it is False,
     actual_label (waste type, or "other") is required; actual_sub_type is optional
@@ -107,6 +114,10 @@ def save_feedback(images: list[bytes], predicted_label: str, predicted_confidenc
 
     with _lock:
         IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+        new_bytes = sum(len(b) for b, ext in zip(images, exts)
+                        if not (IMAGE_DIR / f"{hashlib.sha256(b).hexdigest()}.{ext}").exists())
+        if new_bytes and _stored_bytes() + new_bytes > MAX_STORED_BYTES:
+            raise OverflowError("Feedback storage is full; the answer was not saved")
         saved = [_save_image(b, ext) for b, ext in zip(images, exts)]
         record = {
             "id": uuid.uuid4().hex,
